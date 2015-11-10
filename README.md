@@ -3,4 +3,4 @@ A golang object document mapper for MongoDB
 
 
 
-Description coming soon
+Work in progress - description and example api project coming soon
