@@ -1,0 +1,50 @@
+[
+  {
+    "id": "validation.field_required",
+    "translation": "Field '{{.fieldname}}' is required."
+  },
+  {
+    "id": "validation.field_invalid",
+    "translation": "Field '{{.fieldname}}' has an invalid value."
+  },
+  {
+    "id": "validation.field_minlen",
+    "translation": "Field '{{.fieldname}}' must be at least {{.minlen}} characters long."
+  },
+  {
+    "id": "validation.field_maxlen",
+    "translation": "Field '{{.fieldname}}' can be maximum {{.maxlen}} characters long."
+  },
+  {
+    "id": "validation.entry_exists",
+    "translation": "{{.entry}} already exists for value '{{.value}}'."
+  },
+  {
+    "id": "validation.field_not_exclusive",
+    "translation": "Only one of both fields can be set: '{{.fieldname_first}}'' or '{{.fieldname_second}}'."
+  },
+  {
+    "id": "validation.field_required_exclusive",
+    "translation": "Field '{{.fieldname_first}}' or '{{.fieldname_second}}' required."
+  },
+  {
+    "id": "user.email_pass_invalid",
+    "translation": "Email or password is wrong."
+  },
+  {
+    "id": "user.already_logged_in",
+    "translation": "You are already logged in."
+  },
+  {
+    "id": "user.already_logged_out",
+    "translation": "You are not logged in."
+  },
+  {
+    "id": "user.email_pass_required",
+    "translation": "Email and password are required."
+  },
+  {
+    "id": "user.invalid_id",
+    "translation": "User ID is invalid."
+  }
+]

@@ -9,18 +9,16 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-import "git.zebresel.com/signum/lib/mongodb"
-
 const (
 	DBHost              string = "127.0.0.1"
-	DBName              string = "signumplus"
+	DBName              string = "mongodm_sample"
 	DBTestCollection    string = "_testCollection"
 	DBTestRelCollection string = "_testRelationCollection"
 )
 
 type (
 	TestModel struct {
-		mongodb.DocumentBase `json:",inline" bson:",inline"`
+		DocumentBase `json:",inline" bson:",inline"`
 
 		Name          string          `json:"name" bson:"name" required:"true" minLen:"2"`
 		Number        int             `json:"number" bson:"number"`
@@ -32,8 +30,8 @@ type (
 	}
 
 	TestRelationModel struct {
-		mongodb.DocumentBase `json:",inline" bson:",inline"`
-		RelationName         string `json:"relationName" bson:"relationName"`
+		DocumentBase `json:",inline" bson:",inline"`
+		RelationName string `json:"relationName" bson:"relationName"`
 	}
 
 	TestEmbedModel struct {
@@ -41,30 +39,30 @@ type (
 	}
 )
 
-var dbConnection *mongodb.Connection
+var dbConnection *Connection
 var testRequest = []byte(`{"testmodel" : {"Name":"Max","Number":1337}}`)
 var testInvalidRequest = []byte(`{"testmodel" : {"Name":"M"}}`)
 
 func init() {
 	//init localisation
-	err := i18n.LoadTranslationFile("../../app/localisation/en-US.webserver.errors.json")
+	err := i18n.LoadTranslationFile("en-US.error.locals.json")
 
 	if err != nil {
 		fmt.Println("%v", err)
 	}
 
 	//get localisation
-	mongodb.L = i18n.MustTfunc("en-US")
+	L = i18n.MustTfunc("en-US")
 }
 
 func TestConnection(t *testing.T) {
 
-	dbConfig := &mongodb.Config{
+	dbConfig := &Config{
 		DatabaseHost: DBHost,
 		DatabaseName: DBName,
 	}
 
-	db, err := mongodb.Connect(dbConfig)
+	db, err := Connect(dbConfig)
 
 	if err != nil {
 
@@ -161,7 +159,7 @@ func TestFindOneWithoutPopulate(t *testing.T) {
 
 	err := Test.FindOne(bson.M{"deleted": false}).Exec(testModel)
 
-	if _, ok := err.(*mongodb.NotFoundError); ok {
+	if _, ok := err.(*NotFoundError); ok {
 		t.Error("DB: FindOne failed, minimum one result was expected", err)
 	} else if err != nil {
 		t.Error("DB: FindOne failed", err)
@@ -190,7 +188,7 @@ func TestUpdate(t *testing.T) {
 
 	err := Test.FindOne(bson.M{"deleted": false}).Exec(testModel)
 
-	if _, ok := err.(*mongodb.NotFoundError); ok {
+	if _, ok := err.(*NotFoundError); ok {
 		t.Error("DB: FindOne failed, minimum one result was expected", err)
 	} else if err != nil {
 		t.Error("DB: FindOne failed", err)
@@ -232,7 +230,7 @@ func TestSetNewRelationAndPopulate(t *testing.T) {
 
 	err := Test.FindOne(bson.M{"deleted": false}).Exec(testModel)
 
-	if _, ok := err.(*mongodb.NotFoundError); ok {
+	if _, ok := err.(*NotFoundError); ok {
 		t.Error("DB: FindOne failed, minimum one result was expected", err)
 	} else if err != nil {
 		t.Error("DB: FindOne failed", err)
@@ -295,7 +293,7 @@ func TestRemove(t *testing.T) {
 
 	err := Test.FindOne(bson.M{"deleted": false}).Exec(testModel)
 
-	if _, ok := err.(*mongodb.NotFoundError); ok {
+	if _, ok := err.(*NotFoundError); ok {
 		t.Error("DB: FindOne failed, minimum one result was expected", err)
 	} else if err != nil {
 		t.Error("DB: FindOne failed", err)
@@ -309,7 +307,7 @@ func TestRemove(t *testing.T) {
 
 	err = Test.FindOne(bson.M{"deleted": true}).Exec(testModel)
 
-	if _, ok := err.(*mongodb.NotFoundError); ok {
+	if _, ok := err.(*NotFoundError); ok {
 		t.Error("DB: FindOne failed, expected at least one deleted model", err)
 	} else if err != nil {
 		t.Error("DB: FindOne failed", err)

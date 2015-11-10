@@ -236,10 +236,10 @@ func (self *Connection) Register(document IDocumentBase, collectionName string) 
 		self.modelRegistry[typeName] = model
 		self.typeRegistry[typeName] = reflectType.Elem()
 
-		fmt.Println("Registered type '%v' for collection '%v'", typeName, collectionName)
+		fmt.Sprintf("Registered type '%v' for collection '%v'", typeName, collectionName)
 
 	} else {
-		fmt.Println("Tried to register type '%v' twice", typeName)
+		fmt.Sprintf("Tried to register type '%v' twice", typeName)
 	}
 }
 
