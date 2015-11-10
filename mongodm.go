@@ -1,10 +1,10 @@
 /*
-This package is an object document mapper for MongoDB which uses the mgo adapter.
+This package is an object document mapper for mongodb which uses the mgo adapter.
 
 First step is to create a model, for example:
 
 	type User struct {
-		mongodb.DocumentBase `json:",inline" bson:",inline"`
+		mongodm.DocumentBase `json:",inline" bson:",inline"`
 
 		FirstName string       `json:"firstname" bson:"firstname"`
 		LastName  string       `json:"lastname"	 bson:"lastname"`
@@ -12,13 +12,13 @@ First step is to create a model, for example:
 		Messages  interface{}  `json:"messages"	 bson:"messages" 	model:"Message" relation:"1n" autosave:"true"`
 	}
 
-It is important that each schema embeds the IDocumentBase type (mongodb.DocumentBase) and make sure that it is tagged as 'inline' for json and bson.
+It is important that each schema embeds the IDocumentBase type (mongodm.DocumentBase) and make sure that it is tagged as 'inline' for json and bson.
 This base type also includes the default values id, createdAt, updatedAt and deleted. Those values are set automatically from the ODM.
 The given example also uses a relation (User has Messages). Relations must always be from type interface{} for storing bson.ObjectId OR a completely
 populated object. And of course we also need the related model for each stored message:
 
 	type Message struct {
-		mongodb.DocumentBase `json:",inline" bson:",inline"`
+		mongodm.DocumentBase `json:",inline" bson:",inline"`
 
 		Sender 	  string       `json:"sender" 	 bson:"sender"`
 		Receiver  string       `json:"receiver"	 bson:"receiver"`
@@ -54,7 +54,7 @@ To configure a relation the ODM understands three more tags:
 But it is not necessary to always create relations - you also can use embedded types:
 
 	type Customer struct {
-		mongodb.DocumentBase `json:",inline" bson:",inline"`
+		mongodm.DocumentBase `json:",inline" bson:",inline"`
 
 		FirstName string       `json:"firstname" bson:"firstname"`
 		LastName  string       `json:"lastname"	 bson:"lastname"`
@@ -137,16 +137,16 @@ type (
 )
 
 /*
-Use this method to connect to a mongo db instance. The only parameter which is expected is a *mongodb.Config object.
+Use this method to connect to a mongo db instance. The only parameter which is expected is a *mongodm.Config object.
 
 For example:
 
-	dbConfig := &mongodb.Config{
+	dbConfig := &mongodm.Config{
 		DatabaseHost: "localhost",
 		DatabaseName: "signumplus",
 	}
 
-	connection, err := mongodb.Connect(dbConfig)
+	connection, err := mongodm.Connect(dbConfig)
 
 	if err != nil {
 		log.E("Database connection error: %v", err)
