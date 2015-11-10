@@ -84,8 +84,6 @@ import (
 
 	"github.com/nicksnyder/go-i18n/i18n"
 
-	"git.zebresel.com/signum/lib/log"
-
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -238,10 +236,10 @@ func (self *Connection) Register(document IDocumentBase, collectionName string) 
 		self.modelRegistry[typeName] = model
 		self.typeRegistry[typeName] = reflectType.Elem()
 
-		log.I("Registered type '%v' for collection '%v'", typeName, collectionName)
+		fmt.Println("Registered type '%v' for collection '%v'", typeName, collectionName)
 
 	} else {
-		log.W("Tried to register type '%v' twice", typeName)
+		fmt.Println("Tried to register type '%v' twice", typeName)
 	}
 }
 

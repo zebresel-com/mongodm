@@ -1,6 +1,7 @@
 package mongodm
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/nicksnyder/go-i18n/i18n"
@@ -8,10 +9,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-import (
-	"git.zebresel.com/signum/lib/log"
-	"git.zebresel.com/signum/lib/mongodb"
-)
+import "git.zebresel.com/signum/lib/mongodb"
 
 const (
 	DBHost              string = "127.0.0.1"
@@ -52,7 +50,7 @@ func init() {
 	err := i18n.LoadTranslationFile("../../app/localisation/en-US.webserver.errors.json")
 
 	if err != nil {
-		log.E("%v", err)
+		fmt.Println("%v", err)
 	}
 
 	//get localisation

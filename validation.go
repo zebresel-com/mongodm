@@ -1,9 +1,8 @@
 package mongodm
 
 import (
+	"fmt"
 	"regexp"
-
-	"git.zebresel.com/signum/lib/log"
 )
 
 func validateEmail(email string) bool {
@@ -18,7 +17,7 @@ func validateRegexp(regex string, target string) bool {
 	match, err := regexp.MatchString(regex, target)
 
 	if err != nil {
-		log.E("%v", err)
+		fmt.Println("%v", err)
 	}
 
 	return match
