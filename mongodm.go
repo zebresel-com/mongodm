@@ -82,8 +82,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nicksnyder/go-i18n/i18n"
-
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -91,8 +89,7 @@ import (
 const REL_11 string = "11" // one-to-one relation
 const REL_1N string = "1n" // one-to-many relation
 
-//function for localization - set by app
-var L i18n.TranslateFunc
+var locals map[string]string
 
 type (
 
@@ -100,6 +97,7 @@ type (
 	Config struct {
 		DatabaseHost string
 		DatabaseName string
+		Locals       map[string]string
 	}
 
 	//The "Database" object which stores all connections
@@ -143,7 +141,7 @@ For example:
 
 	dbConfig := &mongodm.Config{
 		DatabaseHost: "localhost",
-		DatabaseName: "signumplus",
+		DatabaseName: "mongodm_sample",
 	}
 
 	connection, err := mongodm.Connect(dbConfig)
@@ -162,6 +160,12 @@ func Connect(config *Config) (*Connection, error) {
 		database:      nil,
 		modelRegistry: make(map[string]*Model),
 		typeRegistry:  make(map[string]reflect.Type),
+	}
+
+	if config.Locals == nil {
+		panic("You need to set validation localisations for one language")
+	} else {
+		locals = config.Locals
 	}
 
 	err := con.Open()
@@ -184,6 +188,19 @@ func (self *Connection) document(typeName string) IDocumentBase {
 	}
 
 	panic(fmt.Sprintf("DB: Type '%v' is not registered", typeName))
+}
+
+func L(key string, values ...interface{}) string {
+
+	if locals != nil {
+
+		if _, ok := locals[key]; ok {
+
+			return fmt.Sprintf(locals[key], values...)
+		}
+	}
+
+	return key
 }
 
 /*

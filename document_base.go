@@ -106,6 +106,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 		minLenTag := fieldTag.Get("minLen")
 		maxLenTag := fieldTag.Get("maxLen")
 		requiredTag := fieldTag.Get("required")
+		modelTag := fieldTag.Get("model")
 
 		fieldName := fieldType.Field(fieldIndex).Name
 		fieldValue := documentValue.Field(fieldIndex)
@@ -169,7 +170,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 		if required && !isSet {
 
-			self.AppendError(&validationErrors, L("validation.field_required", m{"fieldname": validationName}))
+			self.AppendError(&validationErrors, L("validation.field_required", validationName))
 		}
 
 		if stringFieldValue, ok := fieldValue.Interface().(string); ok {
@@ -180,21 +181,44 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 			if isSet && minLen > 0 && len(stringFieldValue) < minLen {
 
-				self.AppendError(&validationErrors, L("validation.field_minlen", m{"fieldname": validationName, "minlen": minLen}))
+				self.AppendError(&validationErrors, L("validation.field_minlen", validationName, minLen))
 
 			} else if isSet && maxLen > 0 && len(stringFieldValue) > maxLen {
 
-				self.AppendError(&validationErrors, L("validation.field_maxlen", m{"fieldname": validationName, "maxlen": maxLen}))
+				self.AppendError(&validationErrors, L("validation.field_maxlen", validationName, maxLen))
 			}
 
 			if isSet && isRegex && !validateRegexp(validation, stringFieldValue) {
 
-				self.AppendError(&validationErrors, L("validation.field_invalid", m{"fieldname": validationName}))
+				self.AppendError(&validationErrors, L("validation.field_invalid", validationName))
 			}
 
 			if isSet && validation == "email" && !validateEmail(stringFieldValue) {
 
-				self.AppendError(&validationErrors, L("validation.field_invalid", m{"fieldname": validationName}))
+				self.AppendError(&validationErrors, L("validation.field_invalid", validationName))
+			}
+
+			if len(modelTag) > 0 {
+
+				if !isSet || !bson.IsObjectIdHex(stringFieldValue) {
+
+					self.AppendError(&validationErrors, L("validation.field_invalid_id", validationName))
+				}
+			}
+		} else if fieldValue.Kind() == reflect.Interface && fieldValue.Elem().Kind() == reflect.Slice {
+
+			slice := fieldValue.Elem()
+
+			for index := 0; index < slice.Len(); index++ {
+
+				if objectIdString, ok := slice.Index(index).Interface().(string); ok {
+
+					if !bson.IsObjectIdHex(objectIdString) {
+
+						self.AppendError(&validationErrors, L("validation.field_invalid_id", validationName))
+						break
+					}
+				}
 			}
 		}
 	}
@@ -659,6 +683,15 @@ func (self *DocumentBase) persistRelation(value reflect.Value, autoSave bool) (e
 			}
 
 			return nil, typedValue
+		}
+
+	case string:
+		{
+			if !bson.IsObjectIdHex(typedValue) {
+				return &InvalidIdError{&QueryError{fmt.Sprintf("Invalid id`s given")}}, bson.ObjectId("")
+			} else {
+				return nil, bson.ObjectIdHex(typedValue)
+			}
 		}
 
 	default:
