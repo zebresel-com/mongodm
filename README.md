@@ -13,7 +13,7 @@ API documentation can be found here:
 ## Features
 
 - 1:1, 1:n struct relation mapping and embedding
-- call`Save()`,`Update()`, `Delete()` and `Populate()` directly on document instances
+- call `Save()`,`Update()`, `Delete()` and `Populate()` directly on document instances
 - call `Select()`, `Sort()`, `Limit()`, `Skip()` and `Populate()` directly on querys
 - validation (default and custom) followed by translated error list (customizable)
 - population instruction possible before and after querys
@@ -90,14 +90,14 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 ###Create a model
 
 ```go
-	type User struct {
-		mongodm.DocumentBase `json:",inline" bson:",inline"`
+type User struct {
+	mongodm.DocumentBase `json:",inline" bson:",inline"`
 
-		FirstName string       `json:"firstname" bson:"firstname"`
-		LastName  string       `json:"lastname"	 bson:"lastname"`
-		UserName  string       `json:"username"	 bson:"username"`
-		Messages  interface{}  `json:"messages"	 bson:"messages" 	model:"Message" relation:"1n" autosave:"true"`
-	}
+	FirstName string       `json:"firstname" bson:"firstname"`
+	LastName  string       `json:"lastname"	 bson:"lastname"`
+	UserName  string       `json:"username"	 bson:"username"`
+	Messages  interface{}  `json:"messages"	 bson:"messages" 	model:"Message" relation:"1n" autosave:"true"`
+}
 ```
 
 It is important that each schema embeds the IDocumentBase type (mongodm.DocumentBase) and make sure that it is tagged as 'inline' for json and bson.
@@ -106,13 +106,13 @@ The given example also uses a relation (User has Messages). Relations must alway
 populated object. And of course we also need the related model for each stored message:
 
 ```go
-	type Message struct {
-		mongodm.DocumentBase `json:",inline" bson:",inline"`
+type Message struct {
+	mongodm.DocumentBase `json:",inline" bson:",inline"`
 
-		Sender 	  string       `json:"sender" 	 bson:"sender"`
-		Receiver  string       `json:"receiver"	 bson:"receiver"`
-		Text  	  string       `json:"text"	 bson:"text"`
-	}
+	Sender 	  string       `json:"sender" 	 bson:"sender"`
+	Receiver  string       `json:"receiver"	 bson:"receiver"`
+	Text  	  string       `json:"text"	 bson:"text"`
+}
 ```
 Note that when you are using relations, each model will be stored in his own collection. So the values are not embedded and instead stored as object ID
 or array of object ID's.
@@ -143,23 +143,37 @@ To configure a relation the ODM understands three more tags:
 But it is not necessary to always create relations - you also can use embedded types:
 
 ```go
-	type Customer struct {
-		mongodm.DocumentBase `json:",inline" bson:",inline"`
+type Customer struct {
+	mongodm.DocumentBase `json:",inline" bson:",inline"`
 
-		FirstName string       `json:"firstname" bson:"firstname"`
-		LastName  string       `json:"lastname"	 bson:"lastname"`
-		Address   *Address     `json:"address"	 bson:"address"`
-	}
+	FirstName string       `json:"firstname" bson:"firstname"`
+	LastName  string       `json:"lastname"	 bson:"lastname"`
+	Address   *Address     `json:"address"	 bson:"address"`
+}
 
-	type Address struct {
+type Address struct {
 
-		City 	string       `json:"city" 	 bson:"city"`
-		Street  string       `json:"street"	 bson:"street"`
-		ZipCode	int16	     `json:"zip"	 bson:"zip"`
-	}
+	City 	string       `json:"city" 	 bson:"city"`
+	Street  string       `json:"street"	 bson:"street"`
+	ZipCode	int16	     `json:"zip"	 bson:"zip"`
+}
 ```
 
-Persisting a customer instance to the database would result in embedding an complete address object. You can embed all supported types.
+Persisting a customer instance to the database would result in embedding a complete address object. You can embed all supported types.
 
-Now that you got some models it is important to create a connection to the database and to register these models for the ODM.
+Now that you got some models and a connection to the database you have to register these models for the ODM for working with them.
+
 ###Register your models (collections)
+
+It is necessary to register your created models to the ODM to work with. Within this process
+the ODM creates an internal model and type registry to work fully automatically and consistent.
+Make sure you already created a connection. Registration expects a pointer to an IDocumentBase
+type and the collection name where the docuements should be stored in.
+
+For example:
+
+```go
+connection.Register(&User{}, "users")
+connection.Register(&Message{}, "messages")
+connection.Register(&Customer{}, "customers")
+```
