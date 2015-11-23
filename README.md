@@ -2,9 +2,9 @@
 
 The mongodm package is an object document mapper (ODM) for mongodb written in Go which uses the official mgo adapter.
 
-***(!) README file is work in progress***
+***README file only 70% complete (!) - An example JSON API project with beego is in progress***
 
-API documentation can be found here:
+Maybe read API documentation instead:
 
 [![GoDoc](https://godoc.org/github.com/zebresel-com/mongodm?status.svg)](https://godoc.org/github.com/zebresel-com/mongodm)
 
@@ -189,6 +189,26 @@ For example:
 User := connection.Model("User")
 
 User.Find() ...
+```
+
+###Persist a new document in a collection
+
+`Save()` persists all changes for a document. Populated relations are getting converted to object ID's / array of object ID's so you dont have to handle this by yourself.
+Use this function also when the document was newly created, if it is not existent the method will call insert. During the save process createdAt and updatedAt gets also automatically persisted.
+
+For example:
+
+```go
+User := connection.Model("User")
+
+user := &models.User{}
+
+User.New(user) //this sets the connection/collection for this type and is strongly necessary(!) (otherwise panic)
+
+user.FirstName = "Max"
+user.LastName = "Mustermann"
+
+err := user.Save()
 ```
 
 ###FindOne
