@@ -63,7 +63,7 @@ For example:
 Subsequently you have all information for mongodm usage and can now connect to a database.
 Load your localisation file and parse it until you get a `map[string]string` type. Then set the database host and name. Pass the config reference to the mongodm `Connect()` method and you are done.
 
-```golang
+```go
 	file, err := ioutil.ReadFile("locals.json")
 
 	if err != nil {
