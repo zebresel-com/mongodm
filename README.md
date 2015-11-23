@@ -211,7 +211,7 @@ if _, ok := err.(*mongodm.NotFoundError); ok {
 } else {
 	fmt.Println("%v", user)
 }
-``
+```
 
 ###Find
 
