@@ -61,7 +61,7 @@ For example:
 
 	err := User.FindId(bson.ObjectIdHex("55dccbf4113c615e49000001")).Select("firstname").Exec(user)
 
-	if _, ok := err.(*mongodb.NotFoundError); ok {
+	if _, ok := err.(*mongodm.NotFoundError); ok {
 		//no records were found
 	} else if err != nil {
 		//database error
@@ -92,7 +92,7 @@ For example:
 
 	err := User.FindOne(bson.M{"firstname" : "Max", "deleted" : false}).Populate("Messages").Exec(user)
 
-	if _, ok := err.(*mongodb.NotFoundError); ok {
+	if _, ok := err.(*mongodm.NotFoundError); ok {
 		//no records were found
 	} else if err != nil {
 		//database error
@@ -132,7 +132,7 @@ For example:
 
 	err := User.Find(bson.M{"firstname" : "Max", "deleted" : false}).Populate("Messages").Exec(&users)
 
-	if _, ok := err.(*mongodb.NotFoundError); ok { //you also can check the length of the slice
+	if _, ok := err.(*mongodm.NotFoundError); ok { //you also can check the length of the slice
 		//no records were found
 	} else if err != nil {
 		//database error
