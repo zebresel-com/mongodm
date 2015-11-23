@@ -87,4 +87,79 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 	}
 ```
 
-###Register your collections (models)
+###Create a model
+
+```go
+	type User struct {
+		mongodm.DocumentBase `json:",inline" bson:",inline"`
+
+		FirstName string       `json:"firstname" bson:"firstname"`
+		LastName  string       `json:"lastname"	 bson:"lastname"`
+		UserName  string       `json:"username"	 bson:"username"`
+		Messages  interface{}  `json:"messages"	 bson:"messages" 	model:"Message" relation:"1n" autosave:"true"`
+	}
+```
+
+It is important that each schema embeds the IDocumentBase type (mongodm.DocumentBase) and make sure that it is tagged as 'inline' for json and bson.
+This base type also includes the default values id, createdAt, updatedAt and deleted. Those values are set automatically from the ODM.
+The given example also uses a relation (User has Messages). Relations must always be from type interface{} for storing bson.ObjectId OR a completely
+populated object. And of course we also need the related model for each stored message:
+
+```go
+	type Message struct {
+		mongodm.DocumentBase `json:",inline" bson:",inline"`
+
+		Sender 	  string       `json:"sender" 	 bson:"sender"`
+		Receiver  string       `json:"receiver"	 bson:"receiver"`
+		Text  	  string       `json:"text"	 bson:"text"`
+	}
+```
+Note that when you are using relations, each model will be stored in his own collection. So the values are not embedded and instead stored as object ID
+or array of object ID's.
+
+To configure a relation the ODM understands three more tags:
+
+	model:"Message"
+
+		This must be the struct type you want to relate to.
+
+		Default: none, must be set
+
+	relation:"1n"
+
+		It is important that you specify the relation type one-to-one or one-to-many because the ODM must decide whether it accepts an array or object.
+
+		Possible: "1n", "11"
+		Default: "11"
+
+	autosave:"true"
+
+		If you manipulate values of the message relation in this example and then call 'Save()' on the user instance, this flag decides if this is possible or not.
+		When autosave is activated, all relations will also be saved recursively. Otherwise you have to call 'Save()' manually for each relation.
+
+		Possible: "true", "false"
+		Default: "false"
+
+But it is not necessary to always create relations - you also can use embedded types:
+
+```go
+	type Customer struct {
+		mongodm.DocumentBase `json:",inline" bson:",inline"`
+
+		FirstName string       `json:"firstname" bson:"firstname"`
+		LastName  string       `json:"lastname"	 bson:"lastname"`
+		Address   *Address     `json:"address"	 bson:"address"`
+	}
+
+	type Address struct {
+
+		City 	string       `json:"city" 	 bson:"city"`
+		Street  string       `json:"street"	 bson:"street"`
+		ZipCode	int16	     `json:"zip"	 bson:"zip"`
+	}
+```
+
+Persisting a customer instance to the database would result in embedding an complete address object. You can embed all supported types.
+
+Now that you got some models it is important to create a connection to the database and to register these models for the ODM.
+###Register your models (collections)
