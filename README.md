@@ -236,3 +236,58 @@ if _, ok := err.(*mongodm.NotFoundError); ok { //you also can check the length o
 	}
 }
 ```
+
+###FindId
+
+If you have an object ID it is possible to find the matching document with this param.
+
+For example:
+
+```go
+User := connection.Model("User")
+
+user := &models.User{}
+
+err := User.FindId(bson.ObjectIdHex("55dccbf4113c615e49000001")).Select("firstname").Exec(user)
+
+if _, ok := err.(*mongodm.NotFoundError); ok {
+	//no records were found
+} else if err != nil {
+	//database error
+} else {
+	fmt.Println("%v", user)
+}
+```
+
+###Populate
+
+This method replaces the default object ID value with the defined relation type by specifing one or more field names. After it was succesfully populated you can access the relation field values. Note that you need type assertion for this process.
+
+For example:
+
+```go
+User := connection.Model("User")
+
+user := &models.User{}
+
+err := User.Find(bson.M{"firstname" : "Max"}).Populate("Messages").Exec(user)
+
+if err != nil {
+	fmt.Println(err)
+}
+
+for _, user := range users {
+
+	if messages, ok := user.Messages.([]*models.Message); ok {
+
+		for _, message := range messages {
+
+			fmt.Println(message.Sender)
+		}
+	} else {
+		fmt.Println("something went wrong during cast. wrong type?")
+	}
+}
+```
+
+Note: Only the first relation level gets populated! This process is not recursive.
