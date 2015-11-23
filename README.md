@@ -177,3 +177,62 @@ connection.Register(&User{}, "users")
 connection.Register(&Message{}, "messages")
 connection.Register(&Customer{}, "customers")
 ```
+
+###Working on a model (collection)
+
+To create actions on each collection you have to request a model instance.
+Make sure that you registered your collections and schemes first, otherwise it will panic.
+
+For example:
+
+```go
+User := connection.Model("User")
+
+User.Find() ...
+```
+
+###FindOne
+
+If you want to find a single document by specifing query options you have to use this method. The query param expects a map (e.g. bson.M{}) and returns a query object which has to be executed manually. Make sure that you pass an IDocumentBase type to the exec function. After this you obtain the first matching object. You also can check the error if something was found.
+
+For example:
+
+```go
+User := connection.Model("User")
+
+user := &models.User{}
+
+err := User.FindOne(bson.M{"firstname" : "Max", "deleted" : false}).Populate("Messages").Exec(user)
+
+if _, ok := err.(*mongodm.NotFoundError); ok {
+	//no records were found
+} else if err != nil {
+	//database error
+} else {
+	fmt.Println("%v", user)
+}
+``
+
+###Find
+
+Use`Find()` if you want to fetch a set of matching documents. Like FindOne, a map is expected as query param, but you also can call this method without any arguments. When the query is executed you have to pass a pointer to a slice of IDocumentBase types.
+
+For example:
+
+```go
+User := connection.Model("User")
+
+users := []*models.User{}
+
+err := User.Find(bson.M{"firstname" : "Max", "deleted" : false}).Populate("Messages").Exec(&users)
+
+if _, ok := err.(*mongodm.NotFoundError); ok { //you also can check the length of the slice
+	//no records were found
+} else if err != nil {
+	//database error
+} else {
+	for user, _ := range users {
+		fmt.Println("%v", user)
+	}
+}
+```
