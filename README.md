@@ -90,6 +90,10 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 ###Create a model
 
 ```go
+package models
+
+import "github.com/zebresel-com/mongodm"
+
 type User struct {
 	mongodm.DocumentBase `json:",inline" bson:",inline"`
 
@@ -168,7 +172,7 @@ Now that you got some models and a connection to the database you have to regist
 It is necessary to register your created models to the ODM to work with. Within this process
 the ODM creates an internal model and type registry to work fully automatically and consistent.
 Make sure you already created a connection. Registration expects a pointer to an IDocumentBase
-type and the collection name where the docuements should be stored in.
+type and the collection name where the docuements should be stored in. Register your collections only once at runtime!
 
 For example:
 
@@ -305,9 +309,50 @@ for _, user := range users {
 			fmt.Println(message.Sender)
 		}
 	} else {
-		fmt.Println("something went wrong during cast. wrong type?")
+		fmt.Println("something went wrong during type assertion. wrong type?")
+	}
+}
+```
+or after your query only for single users:
+
+```go
+User := connection.Model("User")
+
+user := &models.User{}
+
+err := User.Find(bson.M{"firstname" : "Max"}).Exec(user)
+
+if err != nil {
+	fmt.Println(err)
+}
+
+for index, user := range users {
+
+	if user.FirstName == "Max" {
+
+		err := user.Populate("Messages")
+
+		if err != nil {
+		
+			fmt.Println(err)
+			
+		} else if messages, ok := user.Messages.([]*models.Message); ok {
+	
+			for _, message := range messages {
+	
+				fmt.Println(message.Text)
+			}
+		} else {
+			fmt.Println("something went wrong during type assertion. wrong type?")
+		}
 	}
 }
 ```
 
 Note: Only the first relation level gets populated! This process is not recursive.
+
+###Default document validation
+
+###Custom document validation
+
+##Contribute
