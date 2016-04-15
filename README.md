@@ -6,7 +6,7 @@ The mongodm package is an object document mapper (ODM) for mongodb written in Go
 
 Maybe read API documentation instead:
 
-[![GoDoc](https://godoc.org/github.com/zebresel-com/mongodm?status.svg)](https://godoc.org/github.com/zebresel-com/mongodm)
+[![GoDoc](https://godoc.org/github.com/zebresel-com/beego-response?status.svg)](https://godoc.org/github.com/zebresel-com/beego-response)
 
 ![Heisencat](https://octodex.github.com/images/heisencat.png)
 
