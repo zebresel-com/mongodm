@@ -14,8 +14,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//This is the base type each model needs for working with the ODM. Of course you can create your own base type but make sure
-//that you implement the IDocumentBase type interface!
+// This is the base type each model needs for working with the ODM. Of course you can create your own base type but make sure
+// that you implement the IDocumentBase type interface!
 type DocumentBase struct {
 	document   IDocumentBase   `json:"-" bson:"-"`
 	collection *mgo.Collection `json:"-" bson:"-"`
@@ -89,7 +89,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 	fieldType := documentValue.Type()
 	validationErrors := make([]error, 0, 0)
 
-	//iterate all struct fields
+	// Iterate all struct fields
 	for fieldIndex := 0; fieldIndex < documentValue.NumField(); fieldIndex++ {
 
 		var minLen int
@@ -108,7 +108,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 		maxLenTag := fieldTag.Get("maxLen")
 		requiredTag := fieldTag.Get("required")
 		modelTag := fieldTag.Get("model")
-		relationTag := fieldTag.Get("relation") //reference relation, e.g. one-to-one or one-to-many
+		relationTag := fieldTag.Get("relation") // Reference relation, e.g. one-to-one or one-to-many
 
 		fieldName := fieldType.Field(fieldIndex).Name
 		fieldElem := documentValue.Field(fieldIndex)
@@ -156,8 +156,6 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 			validationName = strings.ToLower(fieldName)
 		}
 
-		fmt.Println(fieldName, fieldValue.Kind(), relationTag)
-
 		if fieldValue.Kind() == reflect.Slice && relationTag != REL_1N {
 			self.AppendError(&validationErrors, L("validation.field_invalid_relation1n", validationName))
 		} else if fieldValue.Kind() != reflect.Slice && relationTag == REL_1N {
@@ -183,8 +181,6 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 			isSet = fieldValue.Interface() != reflect.Zero(reflect.TypeOf(fieldValue.Interface())).Interface()
 		}
 
-		//fmt.Println(validationName, isSet, fieldValue.Interface())
-
 		if required && !isSet {
 
 			self.AppendError(&validationErrors, L("validation.field_required", validationName))
@@ -192,7 +188,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 		if stringFieldValue, ok := fieldValue.Interface().(string); ok {
 
-			//regex to match a regex
+			// Regex to match a regex
 			regex := regexp.MustCompile(`\/((?)(?:[^\r\n\[\/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|m)?|i(?:gm?|m)?|m(?:gi?|i)?)?)`)
 			isRegex := regex.MatchString(validation)
 
@@ -281,13 +277,6 @@ func (self *DocumentBase) Update(content interface{}) (error, map[string]interfa
 
 		} else {
 
-			/*
-				err := json.Unmarshal(contentBytes, self.document)
-
-				if err != nil {
-					return err, nil
-				}*/
-
 			return errors.New("object not wrapped in typename"), nil
 		}
 
@@ -318,8 +307,8 @@ func (self *DocumentBase) Update(content interface{}) (error, map[string]interfa
 	return nil, nil
 }
 
-//Calling this method will not remove the object from the database. Instead the deleted flag is set to true.
-//So you can use bson.M{"deleted":false} in your query to filter those documents.
+// Calling this method will not remove the object from the database. Instead the deleted flag is set to true.
+// So you can use bson.M{"deleted":false} in your query to filter those documents.
 func (self *DocumentBase) Delete() error {
 
 	if self.Id.Valid() {
@@ -331,55 +320,6 @@ func (self *DocumentBase) Delete() error {
 
 	return errors.New("Invalid object id")
 }
-
-/*
-func (self *DocumentBase) Fill(documentMap interface{}) {
-
-	if workMap, ok := documentMap.(map[string]interface{}); ok {
-		for key, value := range workMap {
-			fmt.Println("key/value", key, value)
-		}
-
-		document := reflect.ValueOf(self.document).Elem()
-		fieldType := document.Type()
-
-		for fieldIndex := 0; fieldIndex < document.NumField(); fieldIndex++ {
-
-			jsonTag := fieldType.Field(fieldIndex).Tag.Get("json")
-			field := document.Field(fieldIndex)
-
-			//fmt.Println(jsonTag)
-
-			if len(jsonTag) > 0 && jsonTag != "-" {
-
-				splitted := strings.Split(jsonTag, ",")
-
-				if len(splitted[0]) > 0 {
-
-					jsonTag = splitted[0]
-
-					//check if key exists
-					if val, ok := workMap[splitted[0]]; ok {
-
-						fmt.Println(reflect.TypeOf(val).Kind())
-						fmt.Println("field", field.Kind())
-
-						if field.Kind() == reflect.Int {
-							fmt.Println("cast", workMap[splitted[0]])
-							val = reflect.New(reflect.TypeOf(1)).Elem().Interface()
-						}
-
-						field.Set(reflect.ValueOf(val))
-					}
-				}
-			}
-
-		}
-	} else {
-		fmt.Println("no")
-	}
-}
-*/
 
 /*
 Populate works exactly like func (*Query) Populate. The only difference is that you call this method
@@ -461,7 +401,7 @@ func (self *DocumentBase) Save() error {
 		panic("You have to initialize your document with *Model.New(document IDocumentBase) before using Save()!")
 	}
 
-	//validate document first
+	// Validate document first
 
 	if valid, issues := self.document.Validate(); !valid {
 		return &ValidationError{&QueryError{"Document could not be validated"}, issues}
@@ -505,7 +445,7 @@ func (self *DocumentBase) Save() error {
 
 			field := reflectStruct.Field(fieldIndex)
 
-			//determine relation type for default initialization
+			// Determine relation type for default initialization
 			if relationTag == REL_11 {
 				relation = REL_11
 			} else if relationTag == REL_1N {
@@ -514,7 +454,7 @@ func (self *DocumentBase) Save() error {
 				relation = REL_11 //set one-to-one as default relation
 			}
 
-			//if nil and relation one-to-many -> init field with empty slice of object ids and continue loop
+			// If nil and relation one-to-many -> init field with empty slice of object ids and continue loop
 			if field.IsNil() {
 
 				if relation == REL_1N {
@@ -544,7 +484,7 @@ func (self *DocumentBase) Save() error {
 			 *	types are not admitted.
 			 */
 
-			//one to many
+			// One to many
 			if fieldValue.Kind() == reflect.Slice {
 
 				if relation != REL_1N {
@@ -554,7 +494,7 @@ func (self *DocumentBase) Save() error {
 				sliceLen := fieldValue.Len()
 				idBuffer := make([]bson.ObjectId, sliceLen, sliceLen)
 
-				//iterate the slice
+				// Iterate the slice
 				for index := 0; index < sliceLen; index++ {
 
 					sliceValue := fieldValue.Index(index)
@@ -577,7 +517,7 @@ func (self *DocumentBase) Save() error {
 				bufferRegistry[field] = fieldValue
 				field.Set(reflect.ValueOf(idBuffer))
 
-				// one to one
+				// One to one
 			} else if (fieldValue.Kind() == reflect.Ptr && fieldValue.Elem().Kind() == reflect.Struct) || fieldValue.Kind() == reflect.String {
 
 				if relation != REL_11 {
@@ -664,13 +604,13 @@ func (self *DocumentBase) Save() error {
 
 func (self *DocumentBase) persistRelation(value reflect.Value, autoSave bool) (error, bson.ObjectId) {
 
-	//detect the type of the value which is stored within the slice
+	// Detect the type of the value which is stored within the slice
 	switch typedValue := value.Interface().(type) {
 
-	// deserialize objects to id
+	// Deserialize objects to id
 	case IDocumentBase:
 		{
-			//save children when flag is enabled
+			// Save children when flag is enabled
 			if autoSave {
 				err := typedValue.Save()
 
@@ -688,7 +628,7 @@ func (self *DocumentBase) persistRelation(value reflect.Value, autoSave bool) (e
 			return nil, objectId
 		}
 
-	//only save the id
+	// Only save the id
 	case bson.ObjectId:
 		{
 			if !typedValue.Valid() {
