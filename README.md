@@ -1,12 +1,9 @@
+[![GoDoc](https://godoc.org/github.com/zebresel-com/mongodm?status.svg)](https://godoc.org/github.com/zebresel-com/mongodm)
+
 ## What is mongodm?
 
 The mongodm package is an object document mapper (ODM) for mongodb written in Go which uses the official mgo adapter.
-
-***README file only 70% complete (!) - An example JSON API project with beego is in progress***
-
-Maybe read API documentation instead:
-
-[![GoDoc](https://godoc.org/github.com/zebresel-com/mongodm?status.svg)](https://godoc.org/github.com/zebresel-com/mongodm)
+You can find an **example API application** [here](https://github.com/moehlone/mongodm-example).
 
 ![Heisencat](https://octodex.github.com/images/heisencat.png)
 
@@ -21,15 +18,21 @@ Maybe read API documentation instead:
 - default handling for `ID`, `CreatedAt`, `UpdatedAt` and `Deleted` attribute
 - extends `*mgo.Collection`
 
+## Todos
+
+- default localisation (fallback if none specified)
+- database authentication (user and password)
+- recursive population
+
 ##Usage
 
 ###Note(!)
 
 `Collection` naming in this package is switched to `Model`.
 
-###Fetch
+###Fetch (terminal)
 
-Call `go get github.com/zebresel-com/mongodm` in your terminal.
+`go get github.com/zebresel-com/mongodm`
 
 ###Import
 
@@ -355,4 +358,4 @@ Note: Only the first relation level gets populated! This process is not recursiv
 
 ###Custom document validation
 
-##Contribute
+
