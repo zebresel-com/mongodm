@@ -446,8 +446,46 @@ func (self *User) Validate(values ...interface{}) (bool, []error) {
 	return valid, validationErrors
 }
 ```
-Simply add a `Validate` method in your `IDocumentBase` type model
+Simply add a `Validate` method in your `IDocumentBase` type model with the signature
+`Validate(...interface{}) (bool, []error)`. Within this you can implement any checks that you want. You can call the `DefaultValidate` method first to run all default validations. You will get a `valid` and `validationErrors` return value.
+Now you can run your custom checks and append some more errors with `AppendError(*[]error, message string)`. Also have a look at the `mongodm.L` method if you need language localisation! The next example shows how we can use our custom validate method:
 
-If you want to use your own regular expression then use the following format: `validation:"/YOUR_REGEX/YOUR_FLAG(S)"` - for example: `validation:"/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}/"`
+```go
+User := self.db.Model("User")
+	user := &models.User{}
 
-**Feel free to contribute!**
+	// NOTE: we now want our request body get back as a map (requestMap)..
+	err, requestMap := User.New(user, self.Ctx.Input.RequestBody)
+
+	if err != nil {
+		self.response.Error(http.StatusBadRequest, err)
+		return
+	}
+
+	//NOTE: ..and validate the "password" parameter which is not part of the model/document
+	if valid, issues := user.Validate(requestMap["password"]); valid {
+		err = user.Save()
+		
+		if err != nil {
+			self.response.Error(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		self.response.Error(http.StatusBadRequest, issues)
+		return
+	}
+
+	self.response.AddContent("user", user)
+	self.response.SetStatus(http.StatusCreated)
+	self.response.ServeJSON()
+}
+```
+In this case we retrieve a `requestMap` and forward the `password` attribute to our `Validate` method (example above). 
+If you want to use your own regular expression as attribute tags then use the following format: `validation:"/YOUR_REGEX/YOUR_FLAG(S)"` - for example: `validation:"/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}/"`
+
+##Questions?
+
+Are there any questions or is something not clear enough? Simply open up a ticket or send me an email :)
+
+
+**Also feel free to contribute!**
