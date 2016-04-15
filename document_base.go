@@ -96,6 +96,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 		var maxLen int
 		var required bool
 		var err error
+		var fieldValue reflect.Value
 
 		field := fieldType.Field(fieldIndex)
 		fieldTag := field.Tag
@@ -107,9 +108,17 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 		maxLenTag := fieldTag.Get("maxLen")
 		requiredTag := fieldTag.Get("required")
 		modelTag := fieldTag.Get("model")
+		relationTag := fieldTag.Get("relation") //reference relation, e.g. one-to-one or one-to-many
 
 		fieldName := fieldType.Field(fieldIndex).Name
-		fieldValue := documentValue.Field(fieldIndex)
+		fieldElem := documentValue.Field(fieldIndex)
+
+		// Get element of field by checking if pointer or copy
+		if fieldElem.Kind() == reflect.Ptr || fieldElem.Kind() == reflect.Interface {
+			fieldValue = fieldElem.Elem()
+		} else {
+			fieldValue = fieldElem
+		}
 
 		if len(minLenTag) > 0 {
 
@@ -145,6 +154,14 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 		if validationName == "-" {
 			validationName = strings.ToLower(fieldName)
+		}
+
+		fmt.Println(fieldName, fieldValue.Kind(), relationTag)
+
+		if fieldValue.Kind() == reflect.Slice && relationTag != REL_1N {
+			self.AppendError(&validationErrors, L("validation.field_invalid_relation1n", validationName))
+		} else if fieldValue.Kind() != reflect.Slice && relationTag == REL_1N {
+			self.AppendError(&validationErrors, L("validation.field_invalid_relation11", validationName))
 		}
 
 		isSet := false
@@ -223,11 +240,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 		}
 	}
 
-	if len(validationErrors) > 0 {
-		return false, validationErrors
-	} else {
-		return true, validationErrors
-	}
+	return len(validationErrors) == 0, validationErrors
 }
 
 func (self *DocumentBase) Update(content interface{}) (error, map[string]interface{}) {

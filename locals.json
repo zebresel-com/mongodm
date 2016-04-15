@@ -1,12 +1,14 @@
 {
     "en-US": {
-        "validation.field_required": "Field '{{fieldname}}' is required.",
-        "validation.field_invalid": "Field '{{fieldname}}' has an invalid value.",
-        "validation.field_invalid_id": "Field '{{fieldname}}' contains an invalid object id value.",
-        "validation.field_minlen": "Field '{{fieldname}}' must be at least {{minlen}} characters long.",
-        "validation.field_maxlen": "Field '{{fieldname}}' can be maximum {{maxlen}} characters long.",
-        "validation.entry_exists": "{{entry}} already exists for value '{{value}}'.",
-        "validation.field_not_exclusive": "Only one of both fields can be set: '{{fieldname_first}}'' or '{{fieldname_second}}'.",
-        "validation.field_required_exclusive": "Field '{{fieldname_first}}' or '{{fieldname_second}}' required."
+        "validation.field_required": "Field '%s' is required.",
+        "validation.field_invalid": "Field '%s' has an invalid value.",
+        "validation.field_invalid_id": "Field '%s' contains an invalid object id value.",
+        "validation.field_minlen": "Field '%s' must be at least %v characters long.",
+        "validation.field_maxlen": "Field '%s' can be maximum %v characters long.",
+        "validation.entry_exists": "%s already exists for value '%v'.",
+        "validation.field_not_exclusive": "Only one of both fields can be set: '%s'' or '%s'.",
+        "validation.field_required_exclusive": "Field '%s' or '%s' required.",
+        "validation.field_invalid_relation11": "Field '%s' has wrong relation. Expected an array.",
+        "validation.field_invalid_relation1n": "Field '%s' has wrong relation. No array expected."
     }
 }

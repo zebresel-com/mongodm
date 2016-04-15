@@ -229,7 +229,6 @@ func (self *Query) extendQuery(mgoQuery *mgo.Query) {
 
 //runPopulation populates all specified fields with defined struct types
 func (self *Query) runPopulation(document reflect.Value) error {
-
 	//iterate all specified population strings
 	for _, populateFieldName := range self.populate {
 
@@ -256,6 +255,7 @@ func (self *Query) runPopulation(document reflect.Value) error {
 				 * 	and decides what has to be set. We dont need the check for "multiple"
 				 * 	here because this was already done in exec.
 				 */
+
 				switch fieldType := field.Interface().(type) {
 
 				//one-to-one
