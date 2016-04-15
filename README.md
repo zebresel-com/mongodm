@@ -12,7 +12,7 @@ You can find an **example API application** [here](https://github.com/moehlone/m
 - 1:1, 1:n struct relation mapping and embedding
 - call `Save()`,`Update()`, `Delete()` and `Populate()` directly on document instances
 - call `Select()`, `Sort()`, `Limit()`, `Skip()` and `Populate()` directly on querys
-- validation (default and custom) followed by translated error list (customizable)
+- validation (default and custom with regular expressions) followed by translated error list (customizable)
 - population instruction possible before and after querys
 - `Find()`, `FindOne()` and `FindID()`
 - default handling for `ID`, `CreatedAt`, `UpdatedAt` and `Deleted` attribute
@@ -23,6 +23,7 @@ You can find an **example API application** [here](https://github.com/moehlone/m
 - default localisation (fallback if none specified)
 - database authentication (user and password)
 - recursive population
+- add more validation presets (like "email")
 
 ##Usage
 
@@ -356,6 +357,97 @@ Note: Only the first relation level gets populated! This process is not recursiv
 
 ###Default document validation
 
+To validate model attributes/values you first have to define some rules.
+Therefore you can add **tags**:
+
+```go
+type User struct {
+	mongodm.DocumentBase `json:",inline" bson:",inline"`
+
+	FirstName    string   `json:"firstname"  bson:"firstname" minLen:"2" maxLen:"30" required:"true"`
+	LastName     string   `json:"lastname"  bson:"lastname" minLen:"2" maxLen:"30" required:"true"`
+	UserName     string   `json:"username"  bson:"username" minLen:"2" maxLen:"15"`
+	Email        string   `json:"email" bson:"email" validation:"email" required:"true"`
+	PasswordHash string   `json:"-" bson:"passwordHash"`
+	Address      *Address `json:"address" bson:"address"`
+}
+```
+
+This User model defines, that the firstname for example must have a minimum length of 2 and a maximum length of 30 characters (**minLen**, **maxLen**). Each **required** attribute says, that the attribute can not be default or empty (default value is required:"false"). The **validation** tag is used for regular expression validation. Currently there is only one preset "email". A use case would be to validate the model after a request was mapped:
+
+```go
+User := self.db.Model("User")
+user := &models.User{}
+
+err, _ := User.New(user, self.Ctx.Input.RequestBody)
+
+if err != nil {
+	self.response.Error(http.StatusBadRequest, err)
+	return
+}
+
+if valid, issues := user.Validate(); valid {
+
+		err = user.Save()
+		
+		if err != nil {
+			self.response.Error(http.StatusInternalServerError)
+			return
+		}
+		
+		// Go on..
+		
+	} else {
+		self.response.Error(http.StatusBadRequest, issues)
+		return
+	}
+```
+
+This example maps a received `Ctx.Input.RequestBody` to the attribute values of a new user model. Continuing with calling `user.Validate()` we detect if the document is valid and if not what issues we have (a list of validation errors). Each `Save` call will also validate the current state. The document gets only persisted when there were no errors.
+
 ###Custom document validation
 
+In some cases you may want to validate request parameters which do not belong to the model itself or you have to do advanced validation checks. Then you can hook up before default validation starts:
 
+```go
+func (self *User) Validate(values ...interface{}) (bool, []error) {
+
+	var valid bool
+	var validationErrors []error
+
+	valid, validationErrors = self.DefaultValidate()
+
+	type m map[string]string
+
+	if len(values) > 0 {
+
+		//expect password as first param then validate it with the next rules
+		if password, ok := values[0].(string); ok {
+
+			if len(password) < 8 {
+
+				self.AppendError(&validationErrors, mongodm.L("validation.field_minlen", "password", 8))
+
+			} else if len(password) > 50 {
+
+				self.AppendError(&validationErrors, mongodm.L("validation.field_maxlen", "password", 50))
+			}
+
+		} else {
+
+			self.AppendError(&validationErrors, mongodm.L("validation.field_required", "password"))
+		}
+	}
+
+	if len(validationErrors) > 0 {
+		valid = false
+	}
+
+	return valid, validationErrors
+}
+```
+Simply add a `Validate` method in your `IDocumentBase` type model
+
+If you want to use your own regular expression then use the following format: `validation:"/YOUR_REGEX/YOUR_FLAG(S)"` - for example: `validation:"/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}/"`
+
+**Feel free to contribute!**
