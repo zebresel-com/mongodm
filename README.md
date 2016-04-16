@@ -24,6 +24,9 @@ You can find an **example API application** [here](https://github.com/moehlone/m
 - database authentication (user and password)
 - recursive population
 - add more validation presets (like "email")
+- benchmarks
+- accept plain strings as objectID value
+- virtuals and hooks (like in mongoose)
 
 ##Usage
 
