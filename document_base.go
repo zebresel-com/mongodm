@@ -178,7 +178,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 		} else {
 
-			isSet = fieldValue.Interface() != reflect.Zero(reflect.TypeOf(fieldValue.Interface())).Interface()
+			isSet = !reflect.DeepEqual(fieldValue.Interface(), reflect.Zero(reflect.TypeOf(fieldValue.Interface())).Interface())
 		}
 
 		if required && !isSet {
