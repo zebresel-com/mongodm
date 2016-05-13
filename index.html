@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Mongodm by zebresel-com</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Mongodm</h1>
+      <h2 class="project-tagline">A golang object document mapper (ODM) for MongoDB</h2>
+      <a href="https://github.com/zebresel-com/mongodm" class="btn">View on GitHub</a>
+      <a href="https://github.com/zebresel-com/mongodm/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/zebresel-com/mongodm/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p><a href="https://godoc.org/github.com/zebresel-com/mongodm"><img src="https://godoc.org/github.com/zebresel-com/mongodm?status.svg" alt="GoDoc"></a></p>
+
+<h2>
+<a id="what-is-mongodm" class="anchor" href="#what-is-mongodm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What is mongodm?</h2>
+
+<p>The mongodm package is an object document mapper (ODM) for mongodb written in Go which uses the official mgo adapter.
+You can find an <strong>example API application</strong> <a href="https://github.com/moehlone/mongodm-example">here</a>.</p>
+
+<p><img src="https://octodex.github.com/images/heisencat.png" alt="Heisencat"></p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>1:1, 1:n struct relation mapping and embedding</li>
+<li>call <code>Save()</code>,<code>Update()</code>, <code>Delete()</code> and <code>Populate()</code> directly on document instances</li>
+<li>call <code>Select()</code>, <code>Sort()</code>, <code>Limit()</code>, <code>Skip()</code> and <code>Populate()</code> directly on querys</li>
+<li>validation (default and custom with regular expressions) followed by translated error list (customizable)</li>
+<li>population instruction possible before and after querys</li>
+<li>
+<code>Find()</code>, <code>FindOne()</code> and <code>FindID()</code>
+</li>
+<li>default handling for <code>ID</code>, <code>CreatedAt</code>, <code>UpdatedAt</code> and <code>Deleted</code> attribute</li>
+<li>extends <code>*mgo.Collection</code>
+</li>
+</ul>
+
+<h2>
+<a id="todos" class="anchor" href="#todos" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Todos</h2>
+
+<ul>
+<li>default localisation (fallback if none specified)</li>
+<li>database authentication (user and password)</li>
+<li>recursive population</li>
+<li>add more validation presets (like "email")</li>
+<li>benchmarks</li>
+<li>accept plain strings as objectID value</li>
+<li>virtuals and hooks (like in mongoose)</li>
+</ul>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
+<h3>
+<a id="note" class="anchor" href="#note" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Note(!)</h3>
+
+<p><code>Collection</code> naming in this package is switched to <code>Model</code>.</p>
+
+<h3>
+<a id="fetch-terminal" class="anchor" href="#fetch-terminal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Fetch (terminal)</h3>
+
+<p><code>go get github.com/zebresel-com/mongodm</code></p>
+
+<h3>
+<a id="import" class="anchor" href="#import" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Import</h3>
+
+<p>Add <code>import "github.com/zebresel-com/mongodm"</code> in your application file.</p>
+
+<h3>
+<a id="define-your-own-localisation-for-validation" class="anchor" href="#define-your-own-localisation-for-validation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Define your own localisation for validation</h3>
+
+<p>First step is to create a language file in your application.
+This is necessary for document validation which is always processed.
+The following entrys are all keys which are currently used. If one of the keys is not defined the output will be the key itself. In the next step you have to specify a translation map when creating a database connection. </p>
+
+<p>For example:</p>
+
+<div class="highlight highlight-source-json"><pre>{
+    <span class="pl-s"><span class="pl-pds">"</span>en-US<span class="pl-pds">"</span></span>: {
+        <span class="pl-s"><span class="pl-pds">"</span>validation.field_required<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Field '%s' is required.<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>validation.field_invalid<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Field '%s' has an invalid value.<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>validation.field_invalid_id<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Field '%s' contains an invalid object id value.<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>validation.field_minlen<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Field '%s' must be at least %v characters long.<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>validation.field_maxlen<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Field '%s' can be maximum %v characters long.<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>validation.entry_exists<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>%s already exists for value '%v'.<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>validation.field_not_exclusive<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Only one of both fields can be set: '%s'' or '%s'.<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>validation.field_required_exclusive<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Field '%s' or '%s' required.<span class="pl-pds">"</span></span>
+    }
+}</pre></div>
+
+<h3>
+<a id="create-a-database-connection" class="anchor" href="#create-a-database-connection" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create a database connection</h3>
+
+<p>Subsequently you have all information for mongodm usage and can now connect to a database.
+Load your localisation file and parse it until you get a <code>map[string]string</code> type. Then set the database host and name. Pass the config reference to the mongodm <code>Connect()</code> method and you are done.</p>
+
+<div class="highlight highlight-source-go"><pre>    <span class="pl-smi">file</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> ioutil.<span class="pl-c1">ReadFile</span>(<span class="pl-s"><span class="pl-pds">"</span>locals.json<span class="pl-pds">"</span></span>)
+
+    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+        fmt.<span class="pl-c1">Printf</span>(<span class="pl-s"><span class="pl-pds">"</span>File error: <span class="pl-c1">%v</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>, err)
+        os.<span class="pl-c1">Exit</span>(<span class="pl-c1">1</span>)
+    }
+
+    <span class="pl-k">var</span> <span class="pl-smi">localMap</span> <span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>
+    json.<span class="pl-c1">Unmarshal</span>(file, &amp;localMap)
+
+    <span class="pl-smi">dbConfig</span> <span class="pl-k">:=</span> &amp;mongodm.<span class="pl-smi">Config</span>{
+        <span class="pl-v">DatabaseHost</span>: <span class="pl-s"><span class="pl-pds">"</span>127.0.0.1<span class="pl-pds">"</span></span>,
+        <span class="pl-v">DatabaseName</span>: <span class="pl-s"><span class="pl-pds">"</span>mongodm_sample<span class="pl-pds">"</span></span>,
+        <span class="pl-v">Locals</span>:       localMap[<span class="pl-s"><span class="pl-pds">"</span>en-US<span class="pl-pds">"</span></span>],
+    }
+
+    <span class="pl-smi">connection</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> mongodm.<span class="pl-c1">Connect</span>(dbConfig)
+
+    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+        fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span>Database connection error: <span class="pl-c1">%v</span><span class="pl-pds">"</span></span>, err)
+    }</pre></div>
+
+<h3>
+<a id="create-a-model" class="anchor" href="#create-a-model" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create a model</h3>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> models
+
+<span class="pl-k">import</span> <span class="pl-s"><span class="pl-pds">"</span>github.com/zebresel-com/mongodm<span class="pl-pds">"</span></span>
+
+<span class="pl-k">type</span> <span class="pl-v">User</span> <span class="pl-k">struct</span> {
+    mongodm.<span class="pl-smi">DocumentBase</span> <span class="pl-s"><span class="pl-pds">`</span>json:",inline" bson:",inline"<span class="pl-pds">`</span></span>
+
+    <span class="pl-v">FirstName</span> <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"firstname" bson:"firstname"<span class="pl-pds">`</span></span>
+    <span class="pl-v">LastName</span>  <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"lastname"  bson:"lastname"<span class="pl-pds">`</span></span>
+    <span class="pl-v">UserName</span>  <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"username"  bson:"username"<span class="pl-pds">`</span></span>
+    <span class="pl-v">Messages</span>  <span class="pl-k">interface</span>{}  <span class="pl-s"><span class="pl-pds">`</span>json:"messages"  bson:"messages"    model:"Message" relation:"1n" autosave:"true"<span class="pl-pds">`</span></span>
+}</pre></div>
+
+<p>It is important that each schema embeds the IDocumentBase type (mongodm.DocumentBase) and make sure that it is tagged as 'inline' for json and bson.
+This base type also includes the default values id, createdAt, updatedAt and deleted. Those values are set automatically from the ODM.
+The given example also uses a relation (User has Messages). Relations must always be from type interface{} for storing bson.ObjectId OR a completely
+populated object. And of course we also need the related model for each stored message:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">type</span> <span class="pl-v">Message</span> <span class="pl-k">struct</span> {
+    mongodm.<span class="pl-smi">DocumentBase</span> <span class="pl-s"><span class="pl-pds">`</span>json:",inline" bson:",inline"<span class="pl-pds">`</span></span>
+
+    <span class="pl-v">Sender</span>    <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"sender"    bson:"sender"<span class="pl-pds">`</span></span>
+    <span class="pl-v">Receiver</span>  <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"receiver"  bson:"receiver"<span class="pl-pds">`</span></span>
+    <span class="pl-v">Text</span>      <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"text"  bson:"text"<span class="pl-pds">`</span></span>
+}</pre></div>
+
+<p>Note that when you are using relations, each model will be stored in his own collection. So the values are not embedded and instead stored as object ID
+or array of object ID's.</p>
+
+<p>To configure a relation the ODM understands three more tags:</p>
+
+<pre><code>model:"Message"
+
+    This must be the struct type you want to relate to.
+
+    Default: none, must be set
+
+relation:"1n"
+
+    It is important that you specify the relation type one-to-one or one-to-many because the ODM must decide whether it accepts an array or object.
+
+    Possible: "1n", "11"
+    Default: "11"
+
+autosave:"true"
+
+    If you manipulate values of the message relation in this example and then call 'Save()' on the user instance, this flag decides if this is possible or not.
+    When autosave is activated, all relations will also be saved recursively. Otherwise you have to call 'Save()' manually for each relation.
+
+    Possible: "true", "false"
+    Default: "false"
+</code></pre>
+
+<p>But it is not necessary to always create relations - you also can use embedded types:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">type</span> <span class="pl-v">Customer</span> <span class="pl-k">struct</span> {
+    mongodm.<span class="pl-smi">DocumentBase</span> <span class="pl-s"><span class="pl-pds">`</span>json:",inline" bson:",inline"<span class="pl-pds">`</span></span>
+
+    <span class="pl-v">FirstName</span> <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"firstname" bson:"firstname"<span class="pl-pds">`</span></span>
+    <span class="pl-v">LastName</span>  <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"lastname"  bson:"lastname"<span class="pl-pds">`</span></span>
+    <span class="pl-v">Address</span>   *Address     <span class="pl-s"><span class="pl-pds">`</span>json:"address"   bson:"address"<span class="pl-pds">`</span></span>
+}
+
+<span class="pl-k">type</span> <span class="pl-v">Address</span> <span class="pl-k">struct</span> {
+
+    <span class="pl-v">City</span>    <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"city"    bson:"city"<span class="pl-pds">`</span></span>
+    <span class="pl-v">Street</span>  <span class="pl-k">string</span>       <span class="pl-s"><span class="pl-pds">`</span>json:"street"  bson:"street"<span class="pl-pds">`</span></span>
+    <span class="pl-v">ZipCode</span> <span class="pl-k">int16</span>        <span class="pl-s"><span class="pl-pds">`</span>json:"zip"     bson:"zip"<span class="pl-pds">`</span></span>
+}</pre></div>
+
+<p>Persisting a customer instance to the database would result in embedding a complete address object. You can embed all supported types.</p>
+
+<p>Now that you got some models and a connection to the database you have to register these models for the ODM for working with them.</p>
+
+<h3>
+<a id="register-your-models-collections" class="anchor" href="#register-your-models-collections" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Register your models (collections)</h3>
+
+<p>It is necessary to register your created models to the ODM to work with. Within this process
+the ODM creates an internal model and type registry to work fully automatically and consistent.
+Make sure you already created a connection. Registration expects a pointer to an IDocumentBase
+type and the collection name where the docuements should be stored in. Register your collections only once at runtime!</p>
+
+<p>For example:</p>
+
+<div class="highlight highlight-source-go"><pre>connection.<span class="pl-c1">Register</span>(&amp;User{}, <span class="pl-s"><span class="pl-pds">"</span>users<span class="pl-pds">"</span></span>)
+connection.<span class="pl-c1">Register</span>(&amp;Message{}, <span class="pl-s"><span class="pl-pds">"</span>messages<span class="pl-pds">"</span></span>)
+connection.<span class="pl-c1">Register</span>(&amp;Customer{}, <span class="pl-s"><span class="pl-pds">"</span>customers<span class="pl-pds">"</span></span>)</pre></div>
+
+<h3>
+<a id="working-on-a-model-collection" class="anchor" href="#working-on-a-model-collection" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Working on a model (collection)</h3>
+
+<p>To create actions on each collection you have to request a model instance.
+Make sure that you registered your collections and schemes first, otherwise it will panic.</p>
+
+<p>For example:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> connection.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+
+User.<span class="pl-c1">Find</span>() ...</pre></div>
+
+<h3>
+<a id="persist-a-new-document-in-a-collection" class="anchor" href="#persist-a-new-document-in-a-collection" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Persist a new document in a collection</h3>
+
+<p><code>Save()</code> persists all changes for a document. Populated relations are getting converted to object ID's / array of object ID's so you dont have to handle this by yourself.
+Use this function also when the document was newly created, if it is not existent the method will call insert. During the save process createdAt and updatedAt gets also automatically persisted.</p>
+
+<p>For example:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> connection.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+
+<span class="pl-smi">user</span> <span class="pl-k">:=</span> &amp;models.<span class="pl-smi">User</span>{}
+
+User.<span class="pl-c1">New</span>(user) <span class="pl-c">//this sets the connection/collection for this type and is strongly necessary(!) (otherwise panic)</span>
+
+user.<span class="pl-smi">FirstName</span> = <span class="pl-s"><span class="pl-pds">"</span>Max<span class="pl-pds">"</span></span>
+user.<span class="pl-smi">LastName</span> = <span class="pl-s"><span class="pl-pds">"</span>Mustermann<span class="pl-pds">"</span></span>
+
+<span class="pl-smi">err</span> <span class="pl-k">:=</span> user.<span class="pl-c1">Save</span>()</pre></div>
+
+<h3>
+<a id="findone" class="anchor" href="#findone" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FindOne</h3>
+
+<p>If you want to find a single document by specifing query options you have to use this method. The query param expects a map (e.g. bson.M{}) and returns a query object which has to be executed manually. Make sure that you pass an IDocumentBase type to the exec function. After this you obtain the first matching object. You also can check the error if something was found.</p>
+
+<p>For example:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> connection.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+
+<span class="pl-smi">user</span> <span class="pl-k">:=</span> &amp;models.<span class="pl-smi">User</span>{}
+
+<span class="pl-smi">err</span> <span class="pl-k">:=</span> <span class="pl-v">User</span>.<span class="pl-c1">FindOne</span>(bson.<span class="pl-smi">M</span>{<span class="pl-s"><span class="pl-pds">"</span>firstname<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>Max<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>deleted<span class="pl-pds">"</span></span> : <span class="pl-c1">false</span>}).<span class="pl-c1">Populate</span>(<span class="pl-s"><span class="pl-pds">"</span>Messages<span class="pl-pds">"</span></span>).<span class="pl-c1">Exec</span>(user)
+
+<span class="pl-k">if</span> <span class="pl-smi">_</span>, <span class="pl-smi">ok</span> <span class="pl-k">:=</span> err.(*mongodm.<span class="pl-smi">NotFoundError</span>); ok {
+    <span class="pl-c">//no records were found</span>
+} <span class="pl-k">else</span> <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+    <span class="pl-c">//database error</span>
+} <span class="pl-k">else</span> {
+    fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-c1">%v</span><span class="pl-pds">"</span></span>, user)
+}</pre></div>
+
+<h3>
+<a id="find" class="anchor" href="#find" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Find</h3>
+
+<p>Use<code>Find()</code> if you want to fetch a set of matching documents. Like FindOne, a map is expected as query param, but you also can call this method without any arguments. When the query is executed you have to pass a pointer to a slice of IDocumentBase types.</p>
+
+<p>For example:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> connection.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+
+<span class="pl-smi">users</span> <span class="pl-k">:=</span> []*models.<span class="pl-smi">User</span>{}
+
+<span class="pl-smi">err</span> <span class="pl-k">:=</span> <span class="pl-v">User</span>.<span class="pl-c1">Find</span>(bson.<span class="pl-smi">M</span>{<span class="pl-s"><span class="pl-pds">"</span>firstname<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>Max<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>deleted<span class="pl-pds">"</span></span> : <span class="pl-c1">false</span>}).<span class="pl-c1">Populate</span>(<span class="pl-s"><span class="pl-pds">"</span>Messages<span class="pl-pds">"</span></span>).<span class="pl-c1">Exec</span>(&amp;users)
+
+<span class="pl-k">if</span> <span class="pl-smi">_</span>, <span class="pl-smi">ok</span> <span class="pl-k">:=</span> err.(*mongodm.<span class="pl-smi">NotFoundError</span>); ok { <span class="pl-c">//you also can check the length of the slice</span>
+    <span class="pl-c">//no records were found</span>
+} <span class="pl-k">else</span> <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+    <span class="pl-c">//database error</span>
+} <span class="pl-k">else</span> {
+    <span class="pl-k">for</span> <span class="pl-smi">user</span>, <span class="pl-smi">_</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> users {
+        fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-c1">%v</span><span class="pl-pds">"</span></span>, user)
+    }
+}</pre></div>
+
+<h3>
+<a id="findid" class="anchor" href="#findid" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FindId</h3>
+
+<p>If you have an object ID it is possible to find the matching document with this param.</p>
+
+<p>For example:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> connection.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+
+<span class="pl-smi">user</span> <span class="pl-k">:=</span> &amp;models.<span class="pl-smi">User</span>{}
+
+<span class="pl-smi">err</span> <span class="pl-k">:=</span> <span class="pl-v">User</span>.<span class="pl-c1">FindId</span>(bson.<span class="pl-c1">ObjectIdHex</span>(<span class="pl-s"><span class="pl-pds">"</span>55dccbf4113c615e49000001<span class="pl-pds">"</span></span>)).<span class="pl-c1">Select</span>(<span class="pl-s"><span class="pl-pds">"</span>firstname<span class="pl-pds">"</span></span>).<span class="pl-c1">Exec</span>(user)
+
+<span class="pl-k">if</span> <span class="pl-smi">_</span>, <span class="pl-smi">ok</span> <span class="pl-k">:=</span> err.(*mongodm.<span class="pl-smi">NotFoundError</span>); ok {
+    <span class="pl-c">//no records were found</span>
+} <span class="pl-k">else</span> <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+    <span class="pl-c">//database error</span>
+} <span class="pl-k">else</span> {
+    fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-c1">%v</span><span class="pl-pds">"</span></span>, user)
+}</pre></div>
+
+<h3>
+<a id="populate" class="anchor" href="#populate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Populate</h3>
+
+<p>This method replaces the default object ID value with the defined relation type by specifing one or more field names. After it was succesfully populated you can access the relation field values. Note that you need type assertion for this process.</p>
+
+<p>For example:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> connection.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+
+<span class="pl-smi">user</span> <span class="pl-k">:=</span> &amp;models.<span class="pl-smi">User</span>{}
+
+<span class="pl-smi">err</span> <span class="pl-k">:=</span> <span class="pl-v">User</span>.<span class="pl-c1">Find</span>(bson.<span class="pl-smi">M</span>{<span class="pl-s"><span class="pl-pds">"</span>firstname<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>Max<span class="pl-pds">"</span></span>}).<span class="pl-c1">Populate</span>(<span class="pl-s"><span class="pl-pds">"</span>Messages<span class="pl-pds">"</span></span>).<span class="pl-c1">Exec</span>(user)
+
+<span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+    fmt.<span class="pl-c1">Println</span>(err)
+}
+
+<span class="pl-k">for</span> <span class="pl-smi">_</span>, <span class="pl-smi">user</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> users {
+
+    <span class="pl-k">if</span> <span class="pl-smi">messages</span>, <span class="pl-smi">ok</span> <span class="pl-k">:=</span> user.<span class="pl-smi">Messages</span>.([]*models.<span class="pl-smi">Message</span>); ok {
+
+        <span class="pl-k">for</span> <span class="pl-smi">_</span>, <span class="pl-smi">message</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> messages {
+
+            fmt.<span class="pl-c1">Println</span>(message.<span class="pl-smi">Sender</span>)
+        }
+    } <span class="pl-k">else</span> {
+        fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span>something went wrong during type assertion. wrong type?<span class="pl-pds">"</span></span>)
+    }
+}</pre></div>
+
+<p>or after your query only for single users:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> connection.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+
+<span class="pl-smi">user</span> <span class="pl-k">:=</span> &amp;models.<span class="pl-smi">User</span>{}
+
+<span class="pl-smi">err</span> <span class="pl-k">:=</span> <span class="pl-v">User</span>.<span class="pl-c1">Find</span>(bson.<span class="pl-smi">M</span>{<span class="pl-s"><span class="pl-pds">"</span>firstname<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>Max<span class="pl-pds">"</span></span>}).<span class="pl-c1">Exec</span>(user)
+
+<span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+    fmt.<span class="pl-c1">Println</span>(err)
+}
+
+<span class="pl-k">for</span> <span class="pl-smi">index</span>, <span class="pl-smi">user</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> users {
+
+    <span class="pl-k">if</span> user.<span class="pl-smi">FirstName</span> == <span class="pl-s"><span class="pl-pds">"</span>Max<span class="pl-pds">"</span></span> {
+
+        <span class="pl-smi">err</span> <span class="pl-k">:=</span> user.<span class="pl-c1">Populate</span>(<span class="pl-s"><span class="pl-pds">"</span>Messages<span class="pl-pds">"</span></span>)
+
+        <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+
+            fmt.<span class="pl-c1">Println</span>(err)
+
+        } <span class="pl-k">else</span> <span class="pl-k">if</span> <span class="pl-smi">messages</span>, <span class="pl-smi">ok</span> <span class="pl-k">:=</span> user.<span class="pl-smi">Messages</span>.([]*models.<span class="pl-smi">Message</span>); ok {
+
+            <span class="pl-k">for</span> <span class="pl-smi">_</span>, <span class="pl-smi">message</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> messages {
+
+                fmt.<span class="pl-c1">Println</span>(message.<span class="pl-smi">Text</span>)
+            }
+        } <span class="pl-k">else</span> {
+            fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span>something went wrong during type assertion. wrong type?<span class="pl-pds">"</span></span>)
+        }
+    }
+}</pre></div>
+
+<p>Note: Only the first relation level gets populated! This process is not recursive.</p>
+
+<h3>
+<a id="default-document-validation" class="anchor" href="#default-document-validation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Default document validation</h3>
+
+<p>To validate model attributes/values you first have to define some rules.
+Therefore you can add <strong>tags</strong>:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">type</span> <span class="pl-v">User</span> <span class="pl-k">struct</span> {
+    mongodm.<span class="pl-smi">DocumentBase</span> <span class="pl-s"><span class="pl-pds">`</span>json:",inline" bson:",inline"<span class="pl-pds">`</span></span>
+
+    <span class="pl-v">FirstName</span>    <span class="pl-k">string</span>   <span class="pl-s"><span class="pl-pds">`</span>json:"firstname"  bson:"firstname" minLen:"2" maxLen:"30" required:"true"<span class="pl-pds">`</span></span>
+    <span class="pl-v">LastName</span>     <span class="pl-k">string</span>   <span class="pl-s"><span class="pl-pds">`</span>json:"lastname"  bson:"lastname" minLen:"2" maxLen:"30" required:"true"<span class="pl-pds">`</span></span>
+    <span class="pl-v">UserName</span>     <span class="pl-k">string</span>   <span class="pl-s"><span class="pl-pds">`</span>json:"username"  bson:"username" minLen:"2" maxLen:"15"<span class="pl-pds">`</span></span>
+    <span class="pl-v">Email</span>        <span class="pl-k">string</span>   <span class="pl-s"><span class="pl-pds">`</span>json:"email" bson:"email" validation:"email" required:"true"<span class="pl-pds">`</span></span>
+    <span class="pl-v">PasswordHash</span> <span class="pl-k">string</span>   <span class="pl-s"><span class="pl-pds">`</span>json:"-" bson:"passwordHash"<span class="pl-pds">`</span></span>
+    <span class="pl-v">Address</span>      *Address <span class="pl-s"><span class="pl-pds">`</span>json:"address" bson:"address"<span class="pl-pds">`</span></span>
+}</pre></div>
+
+<p>This User model defines, that the firstname for example must have a minimum length of 2 and a maximum length of 30 characters (<strong>minLen</strong>, <strong>maxLen</strong>). Each <strong>required</strong> attribute says, that the attribute can not be default or empty (default value is required:"false"). The <strong>validation</strong> tag is used for regular expression validation. Currently there is only one preset "email". A use case would be to validate the model after a request was mapped:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> self.<span class="pl-smi">db</span>.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+<span class="pl-smi">user</span> <span class="pl-k">:=</span> &amp;models.<span class="pl-smi">User</span>{}
+
+<span class="pl-smi">err</span>, <span class="pl-smi">_</span> <span class="pl-k">:=</span> <span class="pl-v">User</span>.<span class="pl-c1">New</span>(user, self.<span class="pl-smi">Ctx</span>.<span class="pl-smi">Input</span>.<span class="pl-smi">RequestBody</span>)
+
+<span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+    self.<span class="pl-smi">response</span>.<span class="pl-c1">Error</span>(http.<span class="pl-smi">StatusBadRequest</span>, err)
+    <span class="pl-k">return</span>
+}
+
+<span class="pl-k">if</span> <span class="pl-smi">valid</span>, <span class="pl-smi">issues</span> <span class="pl-k">:=</span> user.<span class="pl-c1">Validate</span>(); valid {
+
+        err = user.<span class="pl-c1">Save</span>()
+
+        <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+            self.<span class="pl-smi">response</span>.<span class="pl-c1">Error</span>(http.<span class="pl-smi">StatusInternalServerError</span>)
+            <span class="pl-k">return</span>
+        }
+
+        <span class="pl-c">// Go on..</span>
+
+    } <span class="pl-k">else</span> {
+        self.<span class="pl-smi">response</span>.<span class="pl-c1">Error</span>(http.<span class="pl-smi">StatusBadRequest</span>, issues)
+        <span class="pl-k">return</span>
+    }</pre></div>
+
+<p>This example maps a received <code>Ctx.Input.RequestBody</code> to the attribute values of a new user model. Continuing with calling <code>user.Validate()</code> we detect if the document is valid and if not what issues we have (a list of validation errors). Each <code>Save</code> call will also validate the current state. The document gets only persisted when there were no errors.</p>
+
+<h3>
+<a id="custom-document-validation" class="anchor" href="#custom-document-validation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Custom document validation</h3>
+
+<p>In some cases you may want to validate request parameters which do not belong to the model itself or you have to do advanced validation checks. Then you can hook up before default validation starts:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">self</span> *<span class="pl-v">User</span>) <span class="pl-en">Validate</span></span>(<span class="pl-v">values</span> ...<span class="pl-v">interface</span>{}) (<span class="pl-v">bool</span>, []<span class="pl-v">error</span>) {
+
+    <span class="pl-k">var</span> <span class="pl-smi">valid</span> <span class="pl-k">bool</span>
+    <span class="pl-k">var</span> <span class="pl-smi">validationErrors</span> []<span class="pl-k">error</span>
+
+    valid, validationErrors = self.<span class="pl-c1">DefaultValidate</span>()
+
+    <span class="pl-k">type</span> m <span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>
+
+    <span class="pl-k">if</span> <span class="pl-c1">len</span>(values) &gt; <span class="pl-c1">0</span> {
+
+        <span class="pl-c">//expect password as first param then validate it with the next rules</span>
+        <span class="pl-k">if</span> <span class="pl-smi">password</span>, <span class="pl-smi">ok</span> <span class="pl-k">:=</span> values[<span class="pl-c1">0</span>].(<span class="pl-k">string</span>); ok {
+
+            <span class="pl-k">if</span> <span class="pl-c1">len</span>(password) &lt; <span class="pl-c1">8</span> {
+
+                self.<span class="pl-c1">AppendError</span>(&amp;validationErrors, mongodm.<span class="pl-c1">L</span>(<span class="pl-s"><span class="pl-pds">"</span>validation.field_minlen<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>, <span class="pl-c1">8</span>))
+
+            } <span class="pl-k">else</span> <span class="pl-k">if</span> <span class="pl-c1">len</span>(password) &gt; <span class="pl-c1">50</span> {
+
+                self.<span class="pl-c1">AppendError</span>(&amp;validationErrors, mongodm.<span class="pl-c1">L</span>(<span class="pl-s"><span class="pl-pds">"</span>validation.field_maxlen<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>, <span class="pl-c1">50</span>))
+            }
+
+        } <span class="pl-k">else</span> {
+
+            self.<span class="pl-c1">AppendError</span>(&amp;validationErrors, mongodm.<span class="pl-c1">L</span>(<span class="pl-s"><span class="pl-pds">"</span>validation.field_required<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>))
+        }
+    }
+
+    <span class="pl-k">if</span> <span class="pl-c1">len</span>(validationErrors) &gt; <span class="pl-c1">0</span> {
+        valid = <span class="pl-c1">false</span>
+    }
+
+    <span class="pl-k">return</span> valid, validationErrors
+}</pre></div>
+
+<p>Simply add a <code>Validate</code> method in your <code>IDocumentBase</code> type model with the signature
+<code>Validate(...interface{}) (bool, []error)</code>. Within this you can implement any checks that you want. You can call the <code>DefaultValidate</code> method first to run all default validations. You will get a <code>valid</code> and <code>validationErrors</code> return value.
+Now you can run your custom checks and append some more errors with <code>AppendError(*[]error, message string)</code>. Also have a look at the <code>mongodm.L</code> method if you need language localisation! The next example shows how we can use our custom validate method:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">User</span> <span class="pl-k">:=</span> self.<span class="pl-smi">db</span>.<span class="pl-c1">Model</span>(<span class="pl-s"><span class="pl-pds">"</span>User<span class="pl-pds">"</span></span>)
+    <span class="pl-smi">user</span> <span class="pl-k">:=</span> &amp;models.<span class="pl-smi">User</span>{}
+
+    <span class="pl-c">// NOTE: we now want our request body get back as a map (requestMap)..</span>
+    <span class="pl-smi">err</span>, <span class="pl-smi">requestMap</span> <span class="pl-k">:=</span> <span class="pl-v">User</span>.<span class="pl-c1">New</span>(user, self.<span class="pl-smi">Ctx</span>.<span class="pl-smi">Input</span>.<span class="pl-smi">RequestBody</span>)
+
+    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+        self.<span class="pl-smi">response</span>.<span class="pl-c1">Error</span>(http.<span class="pl-smi">StatusBadRequest</span>, err)
+        <span class="pl-k">return</span>
+    }
+
+    <span class="pl-c">//NOTE: ..and validate the "password" parameter which is not part of the model/document</span>
+    <span class="pl-k">if</span> <span class="pl-smi">valid</span>, <span class="pl-smi">issues</span> <span class="pl-k">:=</span> user.<span class="pl-c1">Validate</span>(requestMap[<span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>]); valid {
+        err = user.<span class="pl-c1">Save</span>()
+
+        <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+            self.<span class="pl-smi">response</span>.<span class="pl-c1">Error</span>(http.<span class="pl-smi">StatusInternalServerError</span>)
+            <span class="pl-k">return</span>
+        }
+    } <span class="pl-k">else</span> {
+        self.<span class="pl-smi">response</span>.<span class="pl-c1">Error</span>(http.<span class="pl-smi">StatusBadRequest</span>, issues)
+        <span class="pl-k">return</span>
+    }
+
+    self.<span class="pl-smi">response</span>.<span class="pl-c1">AddContent</span>(<span class="pl-s"><span class="pl-pds">"</span>user<span class="pl-pds">"</span></span>, user)
+    self.<span class="pl-smi">response</span>.<span class="pl-c1">SetStatus</span>(http.<span class="pl-smi">StatusCreated</span>)
+    self.<span class="pl-smi">response</span>.<span class="pl-c1">ServeJSON</span>()
+}</pre></div>
+
+<p>In this case we retrieve a <code>requestMap</code> and forward the <code>password</code> attribute to our <code>Validate</code> method (example above). 
+If you want to use your own regular expression as attribute tags then use the following format: <code>validation:"/YOUR_REGEX/YOUR_FLAG(S)"</code> - for example: <code>validation:"/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}/"</code></p>
+
+<h2>
+<a id="questions" class="anchor" href="#questions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Questions?</h2>
+
+<p>Are there any questions or is something not clear enough? Simply open up a ticket or send me an email :)</p>
+
+<p><strong>Also feel free to contribute!</strong></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/zebresel-com/mongodm">Mongodm</a> is maintained by <a href="https://github.com/zebresel-com">zebresel-com</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
