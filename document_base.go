@@ -164,7 +164,9 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 		isSet := false
 
-		if fieldValue.Kind() == reflect.Ptr && !fieldValue.IsNil() {
+		if !fieldValue.IsValid() {
+			isSet = false
+		} else if fieldValue.Kind() == reflect.Ptr && !fieldValue.IsNil() {
 
 			isSet = true
 
@@ -178,7 +180,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 		} else {
 
-			isSet = fieldValue.Interface() != reflect.Zero(reflect.TypeOf(fieldValue.Interface())).Interface()
+			isSet = !reflect.DeepEqual(fieldValue.Interface(), reflect.Zero(reflect.TypeOf(fieldValue.Interface())).Interface())
 		}
 
 		if required && !isSet {
@@ -186,54 +188,57 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 			self.AppendError(&validationErrors, L("validation.field_required", validationName))
 		}
 
-		if stringFieldValue, ok := fieldValue.Interface().(string); ok {
+		if fieldValue.IsValid() {
+			if stringFieldValue, ok := fieldValue.Interface().(string); ok {
 
-			// Regex to match a regex
-			regex := regexp.MustCompile(`\/((?)(?:[^\r\n\[\/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|m)?|i(?:gm?|m)?|m(?:gi?|i)?)?)`)
-			isRegex := regex.MatchString(validation)
+				// Regex to match a regex
+				regex := regexp.MustCompile(`\/((?)(?:[^\r\n\[\/\\]|\\.|\[(?:[^\r\n\]\\]|\\.)*\])+)\/((?:g(?:im?|m)?|i(?:gm?|m)?|m(?:gi?|i)?)?)`)
+				isRegex := regex.MatchString(validation)
 
-			if isSet && minLen > 0 && len(stringFieldValue) < minLen {
+				if isSet && minLen > 0 && len(stringFieldValue) < minLen {
 
-				self.AppendError(&validationErrors, L("validation.field_minlen", validationName, minLen))
+					self.AppendError(&validationErrors, L("validation.field_minlen", validationName, minLen))
 
-			} else if isSet && maxLen > 0 && len(stringFieldValue) > maxLen {
+				} else if isSet && maxLen > 0 && len(stringFieldValue) > maxLen {
 
-				self.AppendError(&validationErrors, L("validation.field_maxlen", validationName, maxLen))
-			}
-
-			if isSet && isRegex && !validateRegexp(validation, stringFieldValue) {
-
-				self.AppendError(&validationErrors, L("validation.field_invalid", validationName))
-			}
-
-			if isSet && validation == "email" && !validateEmail(stringFieldValue) {
-
-				self.AppendError(&validationErrors, L("validation.field_invalid", validationName))
-			}
-
-			if len(modelTag) > 0 {
-
-				if !isSet || !bson.IsObjectIdHex(stringFieldValue) {
-
-					self.AppendError(&validationErrors, L("validation.field_invalid_id", validationName))
+					self.AppendError(&validationErrors, L("validation.field_maxlen", validationName, maxLen))
 				}
-			}
-		} else if fieldValue.Kind() == reflect.Interface && fieldValue.Elem().Kind() == reflect.Slice {
 
-			slice := fieldValue.Elem()
+				if isSet && isRegex && !validateRegexp(validation, stringFieldValue) {
 
-			for index := 0; index < slice.Len(); index++ {
+					self.AppendError(&validationErrors, L("validation.field_invalid", validationName))
+				}
 
-				if objectIdString, ok := slice.Index(index).Interface().(string); ok {
+				if isSet && validation == "email" && !validateEmail(stringFieldValue) {
 
-					if !bson.IsObjectIdHex(objectIdString) {
+					self.AppendError(&validationErrors, L("validation.field_invalid", validationName))
+				}
+
+				if len(modelTag) > 0 {
+
+					if !isSet || !bson.IsObjectIdHex(stringFieldValue) {
 
 						self.AppendError(&validationErrors, L("validation.field_invalid_id", validationName))
-						break
+					}
+				}
+			} else if fieldValue.Kind() == reflect.Interface && fieldValue.Elem().Kind() == reflect.Slice {
+
+				slice := fieldValue.Elem()
+
+				for index := 0; index < slice.Len(); index++ {
+
+					if objectIdString, ok := slice.Index(index).Interface().(string); ok {
+
+						if !bson.IsObjectIdHex(objectIdString) {
+
+							self.AppendError(&validationErrors, L("validation.field_invalid_id", validationName))
+							break
+						}
 					}
 				}
 			}
 		}
+
 	}
 
 	return len(validationErrors) == 0, validationErrors

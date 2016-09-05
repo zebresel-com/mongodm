@@ -1,17 +1,18 @@
 package mongodm
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
-
-	"github.com/nicksnyder/go-i18n/i18n"
 
 	"gopkg.in/mgo.v2/bson"
 )
 
 const (
 	DBHost              string = "127.0.0.1"
-	DBName              string = "mongodm_sample"
+	DBName              string = "mongodm_test"
 	DBTestCollection    string = "_testCollection"
 	DBTestRelCollection string = "_testRelationCollection"
 )
@@ -42,24 +43,29 @@ type (
 var dbConnection *Connection
 var testRequest = []byte(`{"testmodel" : {"Name":"Max","Number":1337}}`)
 var testInvalidRequest = []byte(`{"testmodel" : {"Name":"M"}}`)
+var localsFile []byte
 
 func init() {
-	//init localisation
-	err := i18n.LoadTranslationFile("en-US.error.locals.json")
+
+	var err error
+
+	localsFile, err = ioutil.ReadFile("locals.json")
 
 	if err != nil {
-		fmt.Println("%v", err)
+		fmt.Printf("File error: %v\n", err)
+		os.Exit(1)
 	}
-
-	//get localisation
-	L = i18n.MustTfunc("en-US")
 }
 
 func TestConnection(t *testing.T) {
 
+	var localMap map[string]map[string]string
+	json.Unmarshal(localsFile, &localMap)
+
 	dbConfig := &Config{
 		DatabaseHost: DBHost,
 		DatabaseName: DBName,
+		Locals:       localMap["en-US"],
 	}
 
 	db, err := Connect(dbConfig)
@@ -349,7 +355,7 @@ func TestValidation(t *testing.T) {
 
 	if valid, issues := testModel.Validate(); valid {
 		t.Error("DB: model validation failed, expected invalid request")
-	} else if len(issues) != 2 {
+	} else if len(issues) != 3 {
 		t.Error("DB: model validation failed, expected two issues", issues)
 	}
 }
