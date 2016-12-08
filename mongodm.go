@@ -163,7 +163,7 @@ func Connect(config *Config) (*Connection, error) {
 	}
 
 	if config.Locals == nil {
-		panic("You need to set validation localisations for one language")
+		locals = DefaultLocals
 	} else {
 		locals = config.Locals
 	}
