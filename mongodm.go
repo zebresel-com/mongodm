@@ -145,7 +145,7 @@ Use this method to connect to a mongo db instance. The only parameter which is e
 For example:
 
 	dbConfig := &mongodm.Config{
-		DatabaseHost: "localhost",
+		DatabaseHosts: []string{"localhost"},
 		DatabaseName: "mongodm_sample",
 	}
 

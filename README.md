@@ -17,11 +17,12 @@ You can find an **example API application** [here](https://github.com/moehlone/m
 - `Find()`, `FindOne()` and `FindID()`
 - default handling for `ID`, `CreatedAt`, `UpdatedAt` and `Deleted` attribute
 - extends `*mgo.Collection`
+- default localisation (fallback if none specified)
+- database authentication (user and password)
+- multiple database hosts on connection
 
 ## Todos
 
-- default localisation (fallback if none specified)
-- database authentication (user and password)
 - recursive population
 - add more validation presets (like "email")
 - benchmarks
@@ -44,7 +45,7 @@ Add `import "github.com/zebresel-com/mongodm"` in your application file.
 
 ###Define your own localisation for validation
 
-First step is to create a language file in your application.
+First step is to create a language file in your application (skip if you want to use the english defaults).
 This is necessary for document validation which is always processed.
 The following entrys are all keys which are currently used. If one of the keys is not defined the output will be the key itself. In the next step you have to specify a translation map when creating a database connection. 
 
@@ -69,6 +70,7 @@ For example:
 
 Subsequently you have all information for mongodm usage and can now connect to a database.
 Load your localisation file and parse it until you get a `map[string]string` type. Then set the database host and name. Pass the config reference to the mongodm `Connect()` method and you are done.
+(You dont need to set a localisation file or credentials)
 
 ```go
 	file, err := ioutil.ReadFile("locals.json")
@@ -82,8 +84,10 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 	json.Unmarshal(file, &localMap)
 
 	dbConfig := &mongodm.Config{
-		DatabaseHost: "127.0.0.1",
+		DatabaseHosts: []string{"127.0.0.1"},
 		DatabaseName: "mongodm_sample",
+		DatabaseUser: "admin",
+		"DatabasePassword": "admin",
 		Locals:       localMap["en-US"],
 	}
 
