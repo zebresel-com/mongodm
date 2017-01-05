@@ -87,7 +87,7 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 		DatabaseHosts: []string{"127.0.0.1"},
 		DatabaseName: "mongodm_sample",
 		DatabaseUser: "admin",
-		"DatabasePassword": "admin",
+		DatabasePassword: "admin",
 		Locals:       localMap["en-US"],
 	}
 
