@@ -81,6 +81,10 @@ import (
 	"reflect"
 	"strings"
 	"time"
+	"io/ioutil"
+	"encoding/json"
+	"runtime"
+	"path"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -92,12 +96,13 @@ const REL_1N string = "1n" // one-to-many relation
 var locals map[string]string
 
 type (
-
 	//Simple config object which has to be passed/set to create a new connection
 	Config struct {
-		DatabaseHost string
-		DatabaseName string
-		Locals       map[string]string
+		DatabaseHosts 		[]string
+		DatabaseName 		string
+		DatabaseUser		string
+		DatabasePassword	string
+		Locals       		map[string]string
 	}
 
 	//The "Database" object which stores all connections
@@ -163,7 +168,22 @@ func Connect(config *Config) (*Connection, error) {
 	}
 
 	if config.Locals == nil {
-		panic("You need to set validation localisations for one language")
+		if _, filename, _, ok := runtime.Caller(0); ok {
+
+			filepath := path.Join(path.Dir(filename), "locals.json")
+			file, err := ioutil.ReadFile(filepath)
+
+		    if err != nil {
+		        return nil, err
+		    }
+
+		    var localMap map[string]map[string]string
+	    	json.Unmarshal(file, &localMap)
+
+	    	locals = localMap["en-US"]
+    	} else {
+    		panic("No caller information to read default localisation file")
+    	}
 	} else {
 		locals = config.Locals
 	}
@@ -277,7 +297,15 @@ func (self *Connection) Open() (err error) {
 		}
 	}()
 
-	session, err := mgo.Dial(self.Config.DatabaseHost)
+	info := &mgo.DialInfo{
+        Addrs:    self.Config.DatabaseHosts,
+        Timeout:  3 * time.Second,
+        Database: self.Config.DatabaseName,
+        Username: self.Config.DatabaseUser,
+        Password: self.Config.DatabasePassword,
+    }
+
+	session, err := mgo.DialWithInfo(info)
 
 	if err != nil {
 		return err

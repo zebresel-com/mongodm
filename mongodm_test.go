@@ -13,6 +13,8 @@ import (
 const (
 	DBHost              string = "127.0.0.1"
 	DBName              string = "mongodm_test"
+	DBUser				string = "admin"
+	DBPass				string = "admin"
 	DBTestCollection    string = "_testCollection"
 	DBTestRelCollection string = "_testRelationCollection"
 )
@@ -63,8 +65,10 @@ func TestConnection(t *testing.T) {
 	json.Unmarshal(localsFile, &localMap)
 
 	dbConfig := &Config{
-		DatabaseHost: DBHost,
+		DatabaseHosts: []string{DBHost},
 		DatabaseName: DBName,
+		DatabaseUser: DBUser,
+		DatabasePassword: DBPass,
 		Locals:       localMap["en-US"],
 	}
 
@@ -86,6 +90,22 @@ func TestConnection(t *testing.T) {
 		//clear other entrys
 		Test.RemoveAll(nil)
 		TestRelation.RemoveAll(nil)
+	}
+}
+
+func TestConnectionWithoutExtendedConfig(t *testing.T) {
+
+	dbConfig := &Config{
+		DatabaseHosts: []string{DBHost},
+		DatabaseName: DBName,
+	}
+
+	_, err := Connect(dbConfig)
+
+	if err != nil {
+
+		t.Error("DB: Connection error", err)
+
 	}
 }
 
