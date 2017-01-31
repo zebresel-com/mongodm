@@ -13,8 +13,8 @@ import (
 const (
 	DBHost              string = "127.0.0.1"
 	DBName              string = "mongodm_test"
-	DBUser				string = "admin"
-	DBPass				string = "admin"
+	DBUser              string = "admin"
+	DBPass              string = "admin"
 	DBTestCollection    string = "_testCollection"
 	DBTestRelCollection string = "_testRelationCollection"
 )
@@ -26,6 +26,7 @@ type (
 		Name          string          `json:"name" bson:"name" required:"true" minLen:"2"`
 		Number        int             `json:"number" bson:"number"`
 		RequiredField string          `json:"requiredField" bson:"requiredField" required:"true"`
+		SomeSlice     []string        `json:"to" bson:"to"`
 		Relation21    interface{}     `json:"relationTwo" bson:"relationTwo" model:"TestRelationModel" relation:"11"`
 		Relation11    interface{}     `json:"relationOne" bson:"relationOne" model:"TestRelationModel" relation:"11"`
 		Relation1N    interface{}     `json:"relationMany" bson:"relationMany" model:"TestRelationModel" relation:"1n"`
@@ -65,11 +66,11 @@ func TestConnection(t *testing.T) {
 	json.Unmarshal(localsFile, &localMap)
 
 	dbConfig := &Config{
-		DatabaseHosts: []string{DBHost},
-		DatabaseName: DBName,
-		DatabaseUser: DBUser,
+		DatabaseHosts:    []string{DBHost},
+		DatabaseName:     DBName,
+		DatabaseUser:     DBUser,
 		DatabasePassword: DBPass,
-		Locals:       localMap["en-US"],
+		Locals:           localMap["en-US"],
 	}
 
 	db, err := Connect(dbConfig)
@@ -97,7 +98,7 @@ func TestConnectionWithoutExtendedConfig(t *testing.T) {
 
 	dbConfig := &Config{
 		DatabaseHosts: []string{DBHost},
-		DatabaseName: DBName,
+		DatabaseName:  DBName,
 	}
 
 	_, err := Connect(dbConfig)

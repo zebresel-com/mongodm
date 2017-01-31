@@ -156,7 +156,7 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 			validationName = strings.ToLower(fieldName)
 		}
 
-		if fieldValue.Kind() == reflect.Slice && relationTag != REL_1N {
+		if len(relationTag) > 0 && fieldValue.Kind() == reflect.Slice && relationTag != REL_1N {
 			self.AppendError(&validationErrors, L("validation.field_invalid_relation1n", validationName))
 		} else if fieldValue.Kind() != reflect.Slice && relationTag == REL_1N {
 			self.AppendError(&validationErrors, L("validation.field_invalid_relation11", validationName))
