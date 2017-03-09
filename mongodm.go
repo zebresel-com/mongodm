@@ -108,8 +108,7 @@ type (
 	//The "Database" object which stores all connections
 	Connection struct {
 		Config        *Config
-		session       *mgo.Session
-		database      *mgo.Database
+		Session       *mgo.Session
 		modelRegistry map[string]*Model
 		typeRegistry  map[string]reflect.Type
 	}
@@ -161,8 +160,7 @@ func Connect(config *Config) (*Connection, error) {
 
 	con := &Connection{
 		Config:        config,
-		session:       nil,
-		database:      nil,
+		Session:       nil,
 		modelRegistry: make(map[string]*Model),
 		typeRegistry:  make(map[string]reflect.Type),
 	}
@@ -248,7 +246,7 @@ func (self *Connection) Model(typeName string) *Model {
 It is necessary to register your created models to the ODM to work with. Within this process
 the ODM creates an internal model and type registry to work fully automatically and consistent.
 Make sure you already created a connection. Registration expects a pointer to an IDocumentBase
-type and the collection name where the docuements should be stored in.
+type and the collection name where the documents should be stored in.
 
 For example:
 	connection.Register(&User{}, "users")
@@ -266,8 +264,7 @@ func (self *Connection) Register(document IDocumentBase, collectionName string) 
 
 	//check if model was already registered
 	if _, ok := self.modelRegistry[typeName]; !ok {
-
-		collection := self.database.C(collectionName)
+		collection := self.Session.DB("").C(collectionName) // empty string returns db name from dial info
 		model := &Model{collection, self}
 
 		self.modelRegistry[typeName] = model
@@ -311,19 +308,16 @@ func (self *Connection) Open() (err error) {
 		return err
 	}
 
-	self.session = session
+	self.Session = session
 
-	self.session.SetMode(mgo.Monotonic, true)
-
-	self.database = self.session.DB(self.Config.DatabaseName)
-
+	self.Session.SetMode(mgo.Monotonic, true)
 	return nil
 }
 
 //Closes an existing database connection
 func (self *Connection) Close() {
 
-	if self.session != nil {
-		self.session.Close()
+	if self.Session != nil {
+		self.Session.Close()
 	}
 }

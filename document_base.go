@@ -419,7 +419,7 @@ func (self *DocumentBase) Save() error {
 	 * original session to wait." see: http://godoc.org/labix.org/v2/mgo#Session.Clone
 	 */
 
-	session := self.connection.session.Clone()
+	session := self.connection.Session.Clone()
 	defer session.Close()
 
 	collection := session.DB(self.connection.Config.DatabaseName).C(self.collection.Name)
