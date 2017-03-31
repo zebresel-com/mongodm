@@ -495,4 +495,4 @@ If you want to use your own regular expression as attribute tags then use the fo
 Are there any questions or is something not clear enough? Simply open up a ticket or send me an email :)
 
 
-**Also feel free to contribute!**
+**Also feel free to contribute! Start pull requests against the `develop` branch.**
