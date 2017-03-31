@@ -29,21 +29,21 @@ You can find an **example API application** [here](https://github.com/moehlone/m
 - accept plain strings as objectID value
 - virtuals and hooks (like in mongoose)
 
-##Usage
+## Usage
 
-###Note(!)
+### Note(!)
 
 `Collection` naming in this package is switched to `Model`.
 
-###Fetch (terminal)
+### Fetch (terminal)
 
 `go get github.com/zebresel-com/mongodm`
 
-###Import
+### Import
 
 Add `import "github.com/zebresel-com/mongodm"` in your application file.
 
-###Define your own localisation for validation
+### Define your own localisation for validation
 
 First step is to create a language file in your application (skip if you want to use the english defaults).
 This is necessary for document validation which is always processed.
@@ -66,7 +66,7 @@ For example:
 }
 ```
 
-###Create a database connection
+### Create a database connection
 
 Subsequently you have all information for mongodm usage and can now connect to a database.
 Load your localisation file and parse it until you get a `map[string]string` type. Then set the database host and name. Pass the config reference to the mongodm `Connect()` method and you are done.
@@ -98,7 +98,7 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 	}
 ```
 
-###Create a model
+### Create a model
 
 ```go
 package models
@@ -178,7 +178,7 @@ Persisting a customer instance to the database would result in embedding a compl
 
 Now that you got some models and a connection to the database you have to register these models for the ODM for working with them.
 
-###Register your models (collections)
+### Register your models (collections)
 
 It is necessary to register your created models to the ODM to work with. Within this process
 the ODM creates an internal model and type registry to work fully automatically and consistent.
@@ -193,7 +193,7 @@ connection.Register(&Message{}, "messages")
 connection.Register(&Customer{}, "customers")
 ```
 
-###Working on a model (collection)
+### Working on a model (collection)
 
 To create actions on each collection you have to request a model instance.
 Make sure that you registered your collections and schemes first, otherwise it will panic.
@@ -206,7 +206,7 @@ User := connection.Model("User")
 User.Find() ...
 ```
 
-###Persist a new document in a collection
+### Persist a new document in a collection
 
 `Save()` persists all changes for a document. Populated relations are getting converted to object ID's / array of object ID's so you dont have to handle this by yourself.
 Use this function also when the document was newly created, if it is not existent the method will call insert. During the save process createdAt and updatedAt gets also automatically persisted.
@@ -226,7 +226,7 @@ user.LastName = "Mustermann"
 err := user.Save()
 ```
 
-###FindOne
+### FindOne
 
 If you want to find a single document by specifing query options you have to use this method. The query param expects a map (e.g. bson.M{}) and returns a query object which has to be executed manually. Make sure that you pass an IDocumentBase type to the exec function. After this you obtain the first matching object. You also can check the error if something was found.
 
@@ -248,7 +248,7 @@ if _, ok := err.(*mongodm.NotFoundError); ok {
 }
 ```
 
-###Find
+### Find
 
 Use`Find()` if you want to fetch a set of matching documents. Like FindOne, a map is expected as query param, but you also can call this method without any arguments. When the query is executed you have to pass a pointer to a slice of IDocumentBase types.
 
@@ -272,7 +272,7 @@ if _, ok := err.(*mongodm.NotFoundError); ok { //you also can check the length o
 }
 ```
 
-###FindId
+### FindId
 
 If you have an object ID it is possible to find the matching document with this param.
 
@@ -294,7 +294,7 @@ if _, ok := err.(*mongodm.NotFoundError); ok {
 }
 ```
 
-###Populate
+### Populate
 
 This method replaces the default object ID value with the defined relation type by specifing one or more field names. After it was succesfully populated you can access the relation field values. Note that you need type assertion for this process.
 
@@ -362,7 +362,7 @@ for index, user := range users {
 
 Note: Only the first relation level gets populated! This process is not recursive.
 
-###Default document validation
+### Default document validation
 
 To validate model attributes/values you first have to define some rules.
 Therefore you can add **tags**:
@@ -412,7 +412,7 @@ if valid, issues := user.Validate(); valid {
 
 This example maps a received `Ctx.Input.RequestBody` to the attribute values of a new user model. Continuing with calling `user.Validate()` we detect if the document is valid and if not what issues we have (a list of validation errors). Each `Save` call will also validate the current state. The document gets only persisted when there were no errors.
 
-###Custom document validation
+### Custom document validation
 
 In some cases you may want to validate request parameters which do not belong to the model itself or you have to do advanced validation checks. Then you can hook up before default validation starts:
 
@@ -490,7 +490,7 @@ User := self.db.Model("User")
 In this case we retrieve a `requestMap` and forward the `password` attribute to our `Validate` method (example above). 
 If you want to use your own regular expression as attribute tags then use the following format: `validation:"/YOUR_REGEX/YOUR_FLAG(S)"` - for example: `validation:"/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}/"`
 
-##Questions?
+## Questions?
 
 Are there any questions or is something not clear enough? Simply open up a ticket or send me an email :)
 
