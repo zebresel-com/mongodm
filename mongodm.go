@@ -304,21 +304,6 @@ func (self *Connection) Open() (err error) {
 		Source: self.Config.Source,
 	}
 	
-	var session *mgo.Session
-	var err error
-	if "" != self.Config.Username {
-		mongoDBDialInfo := &mgo.DialInfo{
-			Addrs:    []string{self.Config.DatabaseHost},
-			Timeout:  60 * time.Second,
-			Database: self.Config.DatabaseName,
-			Username: self.Config.Username,
-			Password: self.Config.Password,
-		}
-		session, err = mgo.DialWithInfo(mongoDBDialInfo)
-	} else {
-		session, err = mgo.Dial(self.Config.DatabaseHost)
-	}
-
 	session, err := mgo.DialWithInfo(info)
 
 	if err != nil {
