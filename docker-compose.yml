@@ -1,0 +1,24 @@
+
+version: '3'
+services:
+  test:
+    depends_on:
+      - mongodb
+    build:
+      context: .
+    image: mongodm
+    volumes:
+      - "$PWD:/go/src/mongodm"
+    command: sh -c "dep ensure -v && go test"
+
+  mongodb:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - "$PWD/.data:/data/db"
+    command: mongod
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
