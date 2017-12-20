@@ -76,8 +76,8 @@ func TestConnection(t *testing.T) {
 		// with a MongoDB server. Defaults to the value of Database, if that is
 		// set, or "admin" otherwise.
 		// see https://godoc.org/labix.org/v2/mgo#DialInfo
-		Source:           "admin",
-		Locals:           localMap["en-US"],
+		DatabaseSource: "admin",
+		Locals:         localMap["en-US"],
 	}
 
 	db, err := Connect(dbConfig)
