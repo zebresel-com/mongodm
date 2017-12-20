@@ -297,7 +297,7 @@ func (self *Connection) Open() (err error) {
 
 	var info *mgo.DialInfo
 	
-	if self.Config.DialInfo == &mgo.DialInfo{} {
+	if self.Config.DialInfo == info {
 		info = &mgo.DialInfo{
 			Addrs:    self.Config.DatabaseHosts,
 			Timeout:  3 * time.Second,
