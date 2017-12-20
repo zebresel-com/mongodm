@@ -102,6 +102,7 @@ type (
 		DatabaseName     string
 		DatabaseUser     string
 		DatabasePassword string
+		DialInfo         *mgo.DialInfo
 		Locals           map[string]string
 	}
 
@@ -294,12 +295,18 @@ func (self *Connection) Open() (err error) {
 		}
 	}()
 
-	info := &mgo.DialInfo{
-		Addrs:    self.Config.DatabaseHosts,
-		Timeout:  3 * time.Second,
-		Database: self.Config.DatabaseName,
-		Username: self.Config.DatabaseUser,
-		Password: self.Config.DatabasePassword,
+	var info *mgo.DialInfo
+	
+	if self.Config.DialInfo == &mgo.DialInfo{} {
+		info = &mgo.DialInfo{
+			Addrs:    self.Config.DatabaseHosts,
+			Timeout:  3 * time.Second,
+			Database: self.Config.DatabaseName,
+			Username: self.Config.DatabaseUser,
+			Password: self.Config.DatabasePassword,
+		}
+	} else {
+		info = self.Config.DialInfo
 	}
 
 	session, err := mgo.DialWithInfo(info)
