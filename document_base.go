@@ -112,6 +112,11 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 		fieldName := fieldType.Field(fieldIndex).Name
 		fieldElem := documentValue.Field(fieldIndex)
+		
+		// Skip unexported fields as refection will throw a panic if trying to access its value
+		if field.PkgPath != "" && !field.Anonymous {
+			continue
+		}
 
 		// Get element of field by checking if pointer or copy
 		if fieldElem.Kind() == reflect.Ptr || fieldElem.Kind() == reflect.Interface {
