@@ -89,6 +89,42 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 		DatabaseName: "mongodm_sample",
 		DatabaseUser: "admin",
 		DatabasePassword: "admin",
+		// The option `DatabaseSource` is the database used to establish 
+		// credentials and privileges with a MongoDB server. Defaults to the value
+		// of `DatabaseName`, if that is set, or "admin" otherwise.
+		DatabaseSource: "admin",
+		Locals:       localMap["en-US"],
+	}
+
+	connection, err := mongodm.Connect(dbConfig)
+
+	if err != nil {
+		fmt.Println("Database connection error: %v", err)
+	}
+```
+
+You can also pass a custom DialInfo from mgo ([`*mgo.DialInfo`](https://godoc.org/labix.org/v2/mgo#DialInfo)). If used, all config attributes starting with `Database` will be ignored:
+
+```go
+	file, err := ioutil.ReadFile("locals.json")
+
+	if err != nil {
+		fmt.Printf("File error: %v\n", err)
+		os.Exit(1)
+	}
+
+	var localMap map[string]map[string]string
+	json.Unmarshal(file, &localMap)
+
+	dbConfig := &mongodm.Config{
+		DialInfo: &mgo.DialInfo{
+			Addrs:    []string{"127.0.0.1"},
+			Timeout:  3 * time.Second,
+			Database: "mongodm_sample",
+			Username: "admin",
+			Password: "admin",
+			Source:   "admin",
+		},
 		Locals:       localMap["en-US"],
 	}
 

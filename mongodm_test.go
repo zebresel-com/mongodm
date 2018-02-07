@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -16,6 +17,7 @@ const (
 	DBName              string = "mongodm_test"
 	DBUser              string = "admin"
 	DBPass              string = "admin"
+	DBSource            string = "admin"
 	DBTestCollection    string = "_testCollection"
 	DBTestRelCollection string = "_testRelationCollection"
 )
@@ -76,8 +78,8 @@ func TestConnection(t *testing.T) {
 		// with a MongoDB server. Defaults to the value of Database, if that is
 		// set, or "admin" otherwise.
 		// see https://godoc.org/labix.org/v2/mgo#DialInfo
-		Source:           "admin",
-		Locals:           localMap["en-US"],
+		DatabaseSource: "admin",
+		Locals:         localMap["en-US"],
 	}
 
 	db, err := Connect(dbConfig)
@@ -98,6 +100,31 @@ func TestConnection(t *testing.T) {
 		//clear other entrys
 		Test.RemoveAll(nil)
 		TestRelation.RemoveAll(nil)
+	}
+}
+
+func TestConnectionWithCustomDialInfo(t *testing.T) {
+
+	var localMap map[string]map[string]string
+	json.Unmarshal(localsFile, &localMap)
+
+	dbConfig := &Config{
+		DialInfo: &mgo.DialInfo{
+			Addrs:    []string{DBHost},
+			Database: DBName,
+			Username: DBUser,
+			Password: DBPass,
+			Source:   DBSource,
+		},
+		Locals: localMap["en-US"],
+	}
+
+	_, err := Connect(dbConfig)
+
+	if err != nil {
+
+		t.Error("DB: Connection error", err)
+
 	}
 }
 
