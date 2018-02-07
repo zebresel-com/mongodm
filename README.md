@@ -103,7 +103,7 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 	}
 ```
 
-You can also pass a custom DialInfo from mgo (`*mgo.DialInfo`). If used, all config attributes starting with `Database` will be ignored:
+You can also pass a custom DialInfo from mgo ([`*mgo.DialInfo`](https://godoc.org/labix.org/v2/mgo#DialInfo)). If used, all config attributes starting with `Database` will be ignored:
 
 ```go
 	file, err := ioutil.ReadFile("locals.json")
