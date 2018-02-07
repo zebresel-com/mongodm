@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/zebresel-com/mongodm.svg?branch=master)](https://travis-ci.org/zebresel-com/mongodm)
 [![GoDoc](https://godoc.org/github.com/zebresel-com/mongodm?status.svg)](https://godoc.org/github.com/zebresel-com/mongodm)
 
 ## What is mongodm?
