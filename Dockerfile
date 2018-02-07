@@ -1,8 +1,9 @@
-FROM golang
+FROM golang:alpine
 
 ENV APP_DIR $GOPATH/src/mongodm
 
-RUN mkdir -p $APP_DIR && \
+RUN apk add --update --no-cache git && \
+    mkdir -p $APP_DIR && \
     go get -u github.com/golang/dep/cmd/dep
     
 ADD . $APP_DIR
