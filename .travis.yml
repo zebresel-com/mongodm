@@ -1,13 +1,18 @@
 language: go
 
 go:
-  - 1.7
-  - 1.8
   - 1.9
   - master
 
+services:
+  - mongodb
+
 before_install:
   - go get -u github.com/golang/dep/cmd/dep
+
+before_script:
+    - sleep 5
+    - mongo mongodm_test --eval 'db.createUser({user:"admin",pwd:"admin",roles:["readWrite"]});'
 
 script:
   - make test_travis
