@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	DBHost              string = "127.0.0.1"
+	// It must be a container name to connect to mongodb correctly
+	DBHost              string = "mongo"
 	DBName              string = "mongodm_test"
 	DBUser              string = "admin"
 	DBPass              string = "admin"
@@ -58,6 +59,7 @@ func init() {
 		fmt.Printf("File error: %v\n", err)
 		os.Exit(1)
 	}
+
 }
 
 func TestConnection(t *testing.T) {
@@ -70,6 +72,11 @@ func TestConnection(t *testing.T) {
 		DatabaseName:     DBName,
 		DatabaseUser:     DBUser,
 		DatabasePassword: DBPass,
+		// Source is the database used to establish credentials and privileges
+		// with a MongoDB server. Defaults to the value of Database, if that is
+		// set, or "admin" otherwise.
+		// see https://godoc.org/labix.org/v2/mgo#DialInfo
+		Source:           "admin",
 		Locals:           localMap["en-US"],
 	}
 

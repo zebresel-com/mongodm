@@ -25,3 +25,11 @@ _testmain.go
 
 # Intellij
 .idea
+
+# godep
+vendor
+
+# data storage
+.data
+
+.env
