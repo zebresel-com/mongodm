@@ -529,34 +529,7 @@ If you want to use your own regular expression as attribute tags then use the fo
 
 ## Contribute
 
-Feel free! Start pull requests or issues if anything is missing for you :)
-
-### Dockerized
-
-With docker, you do not need to install `go`  and `mongodb` on your local machine, it's easy to setup a development environment for this repository. Thanks to @centsent who helped to dockerize this project.
-
-### Prerequisites
-
-Make sure you already installed below programs on your local machine:
-
-* `git`
-* `docker`
-* `docker-compose`
-
-### Usage
-
-Just run `make test`, it will build the docker container and run `go test`.
-
-### dep
-
-[dep](https://github.com/golang/dep) is a prototype dependency management tool for Go.
-To use `dep` in the container, prefix `make` for all `dep` commands, for example:
-
-```bash
-$ make dep "ensure -add github.com/some/repos"
-```
-
-Beware that the double quotes are required after `make dep` command.
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Questions?
 
