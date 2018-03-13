@@ -86,7 +86,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/mgo.v2"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -102,6 +102,8 @@ type (
 		DatabaseName     string
 		DatabaseUser     string
 		DatabasePassword string
+		DatabaseSource   string
+		DialInfo         *mgo.DialInfo
 		Locals           map[string]string
 	}
 
@@ -294,14 +296,21 @@ func (self *Connection) Open() (err error) {
 		}
 	}()
 
-	info := &mgo.DialInfo{
-		Addrs:    self.Config.DatabaseHosts,
-		Timeout:  3 * time.Second,
-		Database: self.Config.DatabaseName,
-		Username: self.Config.DatabaseUser,
-		Password: self.Config.DatabasePassword,
+	var info *mgo.DialInfo
+	
+	if self.Config.DialInfo == info {
+		info = &mgo.DialInfo{
+			Addrs:    self.Config.DatabaseHosts,
+			Timeout:  3 * time.Second,
+			Database: self.Config.DatabaseName,
+			Username: self.Config.DatabaseUser,
+			Password: self.Config.DatabasePassword,
+			Source:   self.Config.DatabaseSource,
+		}
+	} else {
+		info = self.Config.DialInfo
 	}
-
+	
 	session, err := mgo.DialWithInfo(info)
 
 	if err != nil {

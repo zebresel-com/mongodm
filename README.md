@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/zebresel-com/mongodm.svg?branch=master)](https://travis-ci.org/zebresel-com/mongodm)
 [![GoDoc](https://godoc.org/github.com/zebresel-com/mongodm?status.svg)](https://godoc.org/github.com/zebresel-com/mongodm)
 
 ## What is mongodm?
@@ -88,6 +89,42 @@ Load your localisation file and parse it until you get a `map[string]string` typ
 		DatabaseName: "mongodm_sample",
 		DatabaseUser: "admin",
 		DatabasePassword: "admin",
+		// The option `DatabaseSource` is the database used to establish 
+		// credentials and privileges with a MongoDB server. Defaults to the value
+		// of `DatabaseName`, if that is set, or "admin" otherwise.
+		DatabaseSource: "admin",
+		Locals:       localMap["en-US"],
+	}
+
+	connection, err := mongodm.Connect(dbConfig)
+
+	if err != nil {
+		fmt.Println("Database connection error: %v", err)
+	}
+```
+
+You can also pass a custom DialInfo from mgo ([`*mgo.DialInfo`](https://godoc.org/labix.org/v2/mgo#DialInfo)). If used, all config attributes starting with `Database` will be ignored:
+
+```go
+	file, err := ioutil.ReadFile("locals.json")
+
+	if err != nil {
+		fmt.Printf("File error: %v\n", err)
+		os.Exit(1)
+	}
+
+	var localMap map[string]map[string]string
+	json.Unmarshal(file, &localMap)
+
+	dbConfig := &mongodm.Config{
+		DialInfo: &mgo.DialInfo{
+			Addrs:    []string{"127.0.0.1"},
+			Timeout:  3 * time.Second,
+			Database: "mongodm_sample",
+			Username: "admin",
+			Password: "admin",
+			Source:   "admin",
+		},
 		Locals:       localMap["en-US"],
 	}
 
@@ -490,9 +527,11 @@ User := self.db.Model("User")
 In this case we retrieve a `requestMap` and forward the `password` attribute to our `Validate` method (example above). 
 If you want to use your own regular expression as attribute tags then use the following format: `validation:"/YOUR_REGEX/YOUR_FLAG(S)"` - for example: `validation:"/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}/"`
 
+## Contribute
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
 ## Questions?
 
 Are there any questions or is something not clear enough? Simply open up a ticket or send me an email :)
 
-
-**Also feel free to contribute! Start pull requests against the `develop` branch.**
