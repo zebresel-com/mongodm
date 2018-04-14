@@ -29,8 +29,16 @@ type DocumentBase struct {
 
 type m map[string]interface{}
 
+func (self *DocumentBase) GetCollection() *mgo.Collection {
+	return self.collection
+}
+
 func (self *DocumentBase) SetCollection(collection *mgo.Collection) {
 	self.collection = collection
+}
+
+func (self *DocumentBase) GetDocument() IDocumentBase {
+	return self.document
 }
 
 func (self *DocumentBase) SetDocument(document IDocumentBase) {
@@ -112,6 +120,11 @@ func (self *DocumentBase) DefaultValidate() (bool, []error) {
 
 		fieldName := fieldType.Field(fieldIndex).Name
 		fieldElem := documentValue.Field(fieldIndex)
+
+		// Skip unexported fields as refection will throw a panic if trying to access its value
+		if field.PkgPath != "" && !field.Anonymous {
+			continue
+		}
 
 		// Get element of field by checking if pointer or copy
 		if fieldElem.Kind() == reflect.Ptr || fieldElem.Kind() == reflect.Interface {
