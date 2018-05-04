@@ -17,7 +17,7 @@ func validateRegexp(regex string, target string) bool {
 	match, err := regexp.MatchString(regex, target)
 
 	if err != nil {
-		fmt.Println("%v", err)
+		fmt.Printf("%v\n", err)
 	}
 
 	return match
