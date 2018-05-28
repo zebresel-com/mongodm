@@ -2,6 +2,7 @@ package mongodm
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"gopkg.in/mgo.v2"
@@ -282,43 +283,23 @@ func (self *Query) runPopulation(document reflect.Value) error {
 					}
 
 				//one-to-many
-				case []interface{}:
-
+				case []bson.ObjectId:
 					//cast the object id slice to []bson.ObjectId
 					idSlice := reflect.ValueOf(fieldType)
-					idSliceInterface, _ := idSlice.Interface().([]interface{})
+					idSliceInterface := idSlice.Interface().([]interface{})
+					if err := self.oneToManyPopulation(idSliceInterface, relatedDocument, relatedModel, field); err != nil {
+						return err
+					}
 
-					//create a result slice with length of id slice (pointer is important for query execution!)
-					resultSlice := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(relatedDocument)), idSlice.Len(), idSlice.Len())
-					resultSlicePtr := reflect.New(resultSlice.Type())
-
-					//find relation objects by searching for ids which match with entrys from id slice
-					relationError := relatedModel.Find(bson.M{"_id": bson.M{"$in": &idSliceInterface}}).Exec(resultSlicePtr.Interface())
-
-					if relationError == mgo.ErrNotFound || resultSlice.Len() == 0 {
-
-						//in this case it is strictly necessary to init an empty slice of the document type (nil wouldnt be correct)
-						field.Set(reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(relatedDocument)), 0, 0))
-
-					} else if relationError != nil {
-						return relationError
-
-					} else {
-
-						field.Set(resultSlicePtr.Elem())
-
-						for index := 0; index < resultSlicePtr.Elem().Len(); index++ {
-
-							populatedChild := resultSlicePtr.Elem().Index(index)
-
-							self.initWithObjectId(populatedChild)
-							self.initDocument(&populatedChild, &populatedChild, relatedModel.Collection, relatedModel.connection)
-						}
+				case []interface{}:
+					idSlice := reflect.ValueOf(fieldType)
+					idSliceInterface := idSlice.Interface().([]interface{})
+					if err := self.oneToManyPopulation(idSliceInterface, relatedDocument, relatedModel, field); err != nil {
+						return err
 					}
 
 				default:
-
-					panic("DB: unknown type stored as relation - bson.ObjectId or []bson.ObjectId expected")
+					panic(fmt.Sprintf("DB: unknown type stored as relation - bson.ObjectId or []bson.ObjectId expected, got %T", field.Interface()))
 				}
 			}
 
@@ -327,6 +308,38 @@ func (self *Query) runPopulation(document reflect.Value) error {
 		}
 	}
 
+	return nil
+}
+
+func (self *Query) oneToManyPopulation(ids []interface{}, relatedDocument IDocumentBase, relatedModel *Model, field reflect.Value) error {
+	//create a result slice with length of id slice (pointer is important for query execution!)
+	resultSlice := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(relatedDocument)), len(ids), len(ids))
+	resultSlicePtr := reflect.New(resultSlice.Type())
+
+	//find relation objects by searching for ids which match with entrys from id slice
+	relationError := relatedModel.Find(bson.M{"_id": bson.M{"$in": &ids}}).Exec(resultSlicePtr.Interface())
+
+	log.Println(resultSlicePtr)
+
+	if relationError == mgo.ErrNotFound || resultSlice.Len() == 0 {
+		//in this case it is strictly necessary to init an empty slice of the document type (nil wouldnt be correct)
+		field.Set(reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(relatedDocument)), 0, 0))
+
+	} else if relationError != nil {
+		return relationError
+
+	} else {
+
+		field.Set(resultSlicePtr.Elem())
+
+		for index := 0; index < resultSlicePtr.Elem().Len(); index++ {
+
+			populatedChild := resultSlicePtr.Elem().Index(index)
+
+			self.initWithObjectId(populatedChild)
+			self.initDocument(&populatedChild, &populatedChild, relatedModel.Collection, relatedModel.connection)
+		}
+	}
 	return nil
 }
 
